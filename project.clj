@@ -6,5 +6,6 @@
                  [clj-http "3.10.1"]
                  [cheshire "5.10.0"]
                  [org.clojure/data.xml "0.0.8"]
-                 [org.clojure/data.zip "1.0.0"]]
+                 [org.clojure/data.zip "1.0.0"]
+                 [com.github.kyleburton/clj-xpath "1.4.11"]]
   :repl-options {:init-ns eurogames.core})

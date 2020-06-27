@@ -3,7 +3,8 @@
             [cheshire.core :as json]
             [clojure.data.xml :as xml]
             [clojure.zip :as zip]
-            [clojure.data.zip.xml :as zx]))
+            [clojure.data.zip.xml :as zx]
+            [clj-xpath.core :as xpath]))
 
 (defn get-airtable-records
   "Read a single page of records from Airtable."
@@ -40,39 +41,16 @@
   "Get details of a given game"
   [game-id]
   (let [uri (str "https://www.boardgamegeek.com/xmlapi/boardgame/" game-id)]
-    (-> (client/get uri {:query-params {:stats 1}})
+    (-> uri
+        (client/get {:query-params {:stats 1}})
         (:body)
-        (java.io.StringReader.)
-        (xml/parse)
-        (zip/xml-zip))))
+        (xpath/xml->doc))))
 
 (defn game-details
-  [zipper]
-  {:name (zx/xml1-> zipper 
-                    :boardgames 
-                    :boardgame 
-                    :name 
-                    zx/text)
-   :year (zx/xml1-> zipper 
-                    :boardgames 
-                    :boardgame 
-                    :yearpublished 
-                    zx/text)
-   :weight (zx/xml1-> zipper 
-                      :boardgames 
-                      :boardgame 
-                      :statistics 
-                      :ratings 
-                      :averageweight 
-                      zx/text)
-   :ranking (zx/xml1-> zipper 
-                       :boardgames 
-                       :boardgame 
-                       :statistics
-                       :ratings 
-                       :ranks 
-                       :rank
-                       (zx/attr= :name "boardgame")
-                       (zx/attr :value))})
+  [xml]
+  {:name (first (xpath/$x:text+ "//boardgames/boardgame/name" xml))
+   :year (xpath/$x:text "//yearpublished" xml)
+   :weight (xpath/$x:text "//averageweight" xml)
+   :ranking (xpath/$x:text "//rank[@name='boardgame']/@value" xml)})
 
 ;; The End
