@@ -23,16 +23,17 @@
         ;else
         data)))
 
-(defn get-games
+(def get-games
   "Get all the games in Airtable"
-  []
-  (let [api-key (System/getenv "AIRTABLE_API_KEY")
-        app-id "appawmxJtv4xJYiT3"
-        table "games"]
-    (-> (get-airtable-records api-key app-id table "")
-        (:body)
-        (json/parse-string true)
-        (:records))))
+  (memoize
+   (fn []
+     (let [api-key (System/getenv "AIRTABLE_API_KEY")
+           app-id "appawmxJtv4xJYiT3"
+           table "games"]
+       (-> (get-airtable-records api-key app-id table "")
+           (:body)
+           (json/parse-string true)
+           (:records))))))
 
 (defn bgg-game
   "Get details of a given game"
@@ -43,12 +44,26 @@
         (xpath/xml->doc))))
 
 (defn game-details
+  "Extract the key detail from the BGG XML data."
   [xml]
   {:id (:objectid (xpath/$x:attrs "//boardgame" xml))
-   :name (first (xpath/$x:text+ "//boardgames/boardgame/name" xml))
+   :name (first (xpath/$x:text+ "//boardgame/name[@primary='true']" xml))
    :year (xpath/$x:text "//yearpublished" xml)
    :weight (xpath/$x:text "//averageweight" xml)
-   :ranking (xpath/$x:text "//rank[@name='boardgame']/@value" xml)})
+   :ranking (first (xpath/$x:text* "//rank[@name='boardgame']/@value" xml))})
 
+(defn compare-games
+  "Compare my records and BGG"
+  []
+  (for [game (get-games)]
+    (let [record-id (:id game)
+          mine (:fields game)
+          bgg (game-details (bgg-game (:BGG_ID mine)))
+          my-ranking (:BGG_ranking mine)
+          bgg-ranking (Integer. (:ranking bgg))]
 
+      (when (not= my-ranking bgg-ranking)
+        {:name (:name bgg)
+         :my-ranking my-ranking
+         :bgg-ranking bgg-ranking}))))
 ;; The End
