@@ -1,9 +1,6 @@
 (ns eurogames.core
   (:require [clj-http.client :as client]
             [cheshire.core :as json]
-            [clojure.data.xml :as xml]
-            [clojure.zip :as zip]
-            [clojure.data.zip.xml :as zx]
             [clj-xpath.core :as xpath]))
 
 (defn get-airtable-records
@@ -40,17 +37,18 @@
 (defn bgg-game
   "Get details of a given game"
   [game-id]
-  (let [uri (str "https://www.boardgamegeek.com/xmlapi/boardgame/" game-id)]
+  (let [uri (str "https://www.boardgamegeek.com/xmlapi/boardgame/" game-id "?stats=1")]
     (-> uri
-        (client/get {:query-params {:stats 1}})
-        (:body)
+        (slurp)
         (xpath/xml->doc))))
 
 (defn game-details
   [xml]
-  {:name (first (xpath/$x:text+ "//boardgames/boardgame/name" xml))
+  {:id (:objectid (xpath/$x:attrs "//boardgame" xml))
+   :name (first (xpath/$x:text+ "//boardgames/boardgame/name" xml))
    :year (xpath/$x:text "//yearpublished" xml)
    :weight (xpath/$x:text "//averageweight" xml)
    :ranking (xpath/$x:text "//rank[@name='boardgame']/@value" xml)})
+
 
 ;; The End
