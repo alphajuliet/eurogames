@@ -8,24 +8,22 @@
          (prefix-in bgg: "./bgg.rkt")
          (prefix-in air: "./airtable.rkt"))
 
-(define (round-to x p)
+;;-----------------------
+(define (rounded-to x p)
   ;; Round x to precision p
   (~> x
       (/ p)
       floor
       (* p)))
 
-(define (map-pair fn pairs)
-  ;; Map a function over the values in the list of pairs
-  (map (λ (p) (cons (car p) (fn (cdr p)))) pairs))
-
 (define (extract-fields bgg-data)
   ;; Determine updates to Airtable
   ;; extract-fields :: Hash k v -> Hash k v
   (~>> bgg-data
-       (r/select-keys '(ranking complexity yearPublished playingTime minPlayers maxPlayers))
-       (hash-update _ 'complexity (λ (x) (round-to x 0.01)))))
+       (r/select-keys '(ranking complexity yearPublished playingTime minPlayers maxPlayers category))
+       (hash-update _ 'complexity (λ (x) (rounded-to x 0.01)))))
 
+;;-----------------------
 (define (update-game game)
   ;; Given the Airtable entry, extract data from BGG for a game and update the Airtable record.
   ;; update-game :: JSExpr -> ()
@@ -38,6 +36,23 @@
       extract-fields
       (air:update-record record _)))
 
+;;-----------------------
+(define (game-id id games)
+  ;; Get the Airtable game data with the given ID
+  (filter (λ (g) (eq? id (~> g (hash-ref 'fields) (hash-ref 'id)))) games))
+
+(define (update-game-id id [games (air:get-all-records)])
+  ;; Update a game, given just the BGG ID
+  (update-game (first (game-id id games))))
+
+;;-----------------------
+(define (get-categories game)
+  (define bgg-id (~> game (hash-ref 'fields) (hash-ref 'id) number->string))
+  (~>> bgg-id
+       bgg:lookup-game
+       (r/select-keys '(category))))
+
+;;-----------------------
 (define (go)
   ;; Do all the games in Airtable
   (map update-game (air:get-all-records)))

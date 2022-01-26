@@ -89,7 +89,7 @@
   (define headers (list (format "Authorization: Bearer ~a" api-key)
                         "Content-Type: application/json"))
 
-  ;; (displayln (format "Updating ~a~a with ~a" host uri encoded-data))
+  (displayln (format "Updating ~a~a with ~a" host uri encoded-data))
   (http-patch host uri encoded-data headers))
 
 ;; The End
