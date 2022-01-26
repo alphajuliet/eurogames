@@ -73,17 +73,22 @@
   ;; This is lifting hash-ref over lists
   (map (λ (e) (hash-ref e key)) lst))
 
+(define (json-pointer-value-or p1 p2 data)
+  ;; Get value at p1. If error, try p2.
+  (with-handlers
+      ([exn:fail?
+        (λ (exn) (json-pointer-value p2 data))])
+    (json-pointer-value p1 data)))
+
 (define (extract-fields id data)
-  (hash 'name (with-handlers
-                  ([exn:fail?
-                    (λ (exn) (json-pointer-value "/items/item/name/value" data))])
-                (json-pointer-value "/items/item/name/0/value" data))
+  (hash 'name (json-pointer-value-or "/items/item/name/0/value"
+                                     "/items/item/name/value"
+                                     data)
         'id (string->number id)
         'complexity (string->number (json-pointer-value "/items/item/statistics/ratings/averageweight/value" data))
-        'ranking (with-handlers
-                     ([exn:fail?
-                       (λ (exn) (string->number (json-pointer-value "/items/item/statistics/ratings/ranks/rank/value" data)))])
-                   (string->number (json-pointer-value "/items/item/statistics/ratings/ranks/rank/0/value" data)))
+        'ranking (string->number (json-pointer-value-or "/items/item/statistics/ratings/ranks/rank/0/value"
+                                                          "/items/item/statistics/ratings/ranks/rank/value"
+                                                          data))
         'playingTime (string->number (json-pointer-value "/items/item/playingtime/value" data))
         'minPlayers (string->number (json-pointer-value "/items/item/minplayers/value" data))
         'maxPlayers (string->number (json-pointer-value "/items/item/maxplayers/value" data))
