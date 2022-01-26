@@ -45,6 +45,7 @@
 
 ;;----------------
 (define (get-game-data-xml id)
+  ;; @@TODO Not used
   ;; Download game data from BGG
   ;; get-game-data-xml :: String -> SXML
   (define host "boardgamegeek.com")
@@ -89,8 +90,7 @@
         'maxPlayers (string->number (json-pointer-value "/items/item/maxplayers/value" data))
         'yearPublished (string->number (json-pointer-value "/items/item/yearpublished/value" data))
         'category (hash-vals 'value (hash-filter 'type "boardgamecategory" (json-pointer-value "/items/item/link" data)))
-        'retrieved (date->iso8601 (today))
-        ))
+        'retrieved (date->iso8601 (today))))
 
 (define (get-item xpath data)
   ;; get-item :: String -> SXML -> a
@@ -101,8 +101,9 @@
         (first item))))
 
 (define (extract-xml-fields id data)
-  ;; extract-xml-fields : String -> SXML -> Hash Symbol (String | Number)
+  ;; @@TODO Not used
   ;; Extract the values of interest from the SXML as a hash
+  ;; extract-xml-fields : String -> SXML -> Hash Symbol (String | Number)
   (hash 'name (get-item "//items/item/name[@type='primary']/@value/text()" data)
         'id (string->number id)
         'complexity (string->number (get-item "//items/item/statistics/ratings/averageweight/@value/text()" data))
@@ -138,12 +139,5 @@
       (~>> id
            get-game-data
            (extract-fields id)))))
-
-;;----------------
-#;(module+ main
-  (lookup-all-games (get-ids))
-  #;(let ([id (first (vector->list (get-args)))])
-    (when (not (null? id))
-      (display (jsexpr->string (lookup-game id))))))
 
 ;; The End

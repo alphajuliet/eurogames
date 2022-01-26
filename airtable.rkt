@@ -58,9 +58,6 @@
                                      string->symbol
                                      (format "?offset=~s")))))
 
-  #;(displayln (format "# GET ~s" (string->symbol full-uri))
-             (current-error-port))
-
   (read-json (https-get host full-uri headers)))
 
 ;;----------------
@@ -77,40 +74,22 @@
   ;; (define dest-dir (string->path "./data"))
   ;; (define fname (build-path dest-dir "airtable.json"))
   (define out-file (open-output-file fname #:exists 'replace))
-
   (displayln (format "# Write rows to ~a" fname))
   (write-json lst out-file))
 
 ;;-----------------------
-(define (json->string js)
-  (with-output-to-string
-    (λ () (write-json js))))
-
-;;-----------------------
 (define (update-record record data)
+  ;; Update the Airtable record with the given data
   ;; update-record :: String -> Hash k v -> ()
   (define host "api.airtable.com")
   (define uri "/v0/appawmxJtv4xJYiT3/games")
   (define api-key (getenv "AIRTABLE_API_KEY"))
-  ;; (define encoded-data (alist->form-urlencoded data))
   (define update-data (hash 'records (list (hash 'id  record 'fields data))))
-  ;; (define encoded-data (json->string update-data))
-  ;; (displayln update-data)
   (define encoded-data (with-output-to-string (λ () (write-json update-data))))
   (define headers (list (format "Authorization: Bearer ~a" api-key)
                         "Content-Type: application/json"))
 
   ;; (displayln (format "Updating ~a~a with ~a" host uri encoded-data))
   (http-patch host uri encoded-data headers))
-
-;;----------------
-#;(module+ main
-  (define _ (get-args))
-
-  (displayln "# Download game metadata...")
-  (define lst (get-all-rows))
-
-  (displayln (format "# Retrieved ~a rows" (length lst)))
-  (write-rows lst))
 
 ;; The End
