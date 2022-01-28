@@ -8,7 +8,7 @@
 (require json
          net/uri-codec
          threading
-         "http.rkt")
+         (prefix-in h: "http.rkt"))
 
 (provide (all-defined-out))
 
@@ -23,7 +23,7 @@
   (define headers (list (format "Authorization: Bearer ~a" api-key)))
   (define full-uri (string-append base-uri id))
   ;; (displayln (format "GET ~s" full-uri))
-  (read-json (https-get host full-uri headers)))
+  (read-json (h:https-get host full-uri headers)))
 
 ;;----------------
 (define (get-page [offset ""])
@@ -43,7 +43,7 @@
                                      string->symbol
                                      (format "?offset=~s")))))
 
-  (read-json (https-get host full-uri headers)))
+  (read-json (h:https-get host full-uri headers)))
 
 ;;----------------
 ;; Aggregate data over multiple paginated calls
@@ -63,19 +63,26 @@
   (displayln (format "# Write rows to ~a" fname))
   (write-json lst out-file))
 
+(define (encode-record record-id data)
+  ;; Encode a single record for update
+  ;; encode-data :: Hash k v -> String
+  (define update-data
+    (hash 'records (list
+                    (hash 'id  record-id
+                          'fields data))))
+  (with-output-to-string (λ () (write-json update-data))))
+
 ;;----------------
-(define (update-record record data)
+(define (update-record record-id new-data)
   ;; Update the Airtable record with the given data
   ;; update-record :: String -> Hash k v -> ()
   (define host "api.airtable.com")
   (define uri "/v0/appawmxJtv4xJYiT3/games")
   (define api-key (getenv "AIRTABLE_API_KEY"))
-  (define update-data (hash 'records (list (hash 'id  record 'fields data))))
-  (define encoded-data (with-output-to-string (λ () (write-json update-data))))
   (define headers (list (format "Authorization: Bearer ~a" api-key)
                         "Content-Type: application/json"))
 
-  (displayln (format "Updating ~a~a with ~a" host uri encoded-data))
-  (http-patch host uri encoded-data headers))
+  ;; (displayln (format "# Updating ~a~a with ~a" host uri encoded-data))
+  (h:https-patch host uri (encode-record record-id new-data) headers))
 
 ;; The End

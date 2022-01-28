@@ -1,9 +1,7 @@
 #lang racket/base
 
 (require net/http-client
-         racket/port
-         ;; net/uri-codec
-         )
+         racket/port)
 
 (provide (all-defined-out))
 
@@ -25,11 +23,13 @@
         (exit 1))
       resp))
 
-(define (http-post host uri data [headers '()])
+(define (https-post host uri data [headers '()])
+  ;; @@TODO
   #f)
 
-(define (http-patch host uri data [headers '()])
+(define (https-patch host uri data [headers '()])
   ;; HTTP PATCH command
+  ;; https-patch :: String -> String -> List String -> Port | error
   (define-values (status _ resp)
     (http-sendrecv host
                    uri

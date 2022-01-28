@@ -6,12 +6,9 @@
 
 (require sxml
          sxml/sxpath
-         json
-         json-pointer
-         net/uri-codec
          threading
          gregor
-         "http.rkt")
+         (prefix-in h: "http.rkt"))
 
 (provide (all-defined-out))
 
@@ -24,7 +21,7 @@
   (define host "boardgamegeek.com")
   (define uri (format "/xmlapi2/thing?stats=1&id=~a" id))
   (define headers '())
-  (~> (https-get host uri headers)
+  (~> (h:https-get host uri headers)
       (ssax:xml->sxml '())))
 
 (define (get-item xpath data)
