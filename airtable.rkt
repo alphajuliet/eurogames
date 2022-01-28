@@ -13,21 +13,6 @@
 (provide (all-defined-out))
 
 ;;----------------
-(define (get-args)
-
-  (define args (current-command-line-arguments))
-  (define usage-string
-    (format "Usage: ~s"
-            (path->string (find-system-path 'run-file))))
-
-  (unless (zero? (vector-length args))
-      (begin
-        (displayln usage-string)
-        (exit 1)))
-
-  args)
-
-;;----------------
 ;; Download track metadata from Airtable
 
 (define (get-record id)
@@ -48,7 +33,7 @@
   (define api-key (getenv "AIRTABLE_API_KEY"))
   (define headers (list (format "Authorization: Bearer ~a" api-key)))
 
-  ; Set up offset if required
+  ; Set up page offset if required
   (define full-uri
     (if (string=? offset "")
         base-uri
@@ -70,14 +55,15 @@
         ;;else
         data)))
 
+;;----------------
 (define (write-rows lst (fname "./data/airtable.json"))
-  ;; (define dest-dir (string->path "./data"))
-  ;; (define fname (build-path dest-dir "airtable.json"))
+  ;; Write the data to a fixed name file
+  ;; write-rows :: JSExpr -> IO ()
   (define out-file (open-output-file fname #:exists 'replace))
   (displayln (format "# Write rows to ~a" fname))
   (write-json lst out-file))
 
-;;-----------------------
+;;----------------
 (define (update-record record data)
   ;; Update the Airtable record with the given data
   ;; update-record :: String -> Hash k v -> ()

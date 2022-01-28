@@ -15,8 +15,8 @@
 
 (provide (all-defined-out))
 
-(define (xml-to-json uri)
-  ;; Take an XML endpoint and return as JSExpr
+#;(define (xml-to-json uri)
+  ;; Take an XML endpoint and return as JSExpr using a web service
   ;; See https://github.com/factmaven/xml-to-json
   (~>> uri
        uri-encode
@@ -29,32 +29,16 @@
 (define test-xml "https://boardgamegeek.com/xmlapi2/thing?stats=1&id=50")
 
 ;;----------------
-(define (get-args)
-  ;; get-args :: List String
-  (define args (current-command-line-arguments))
-  (define usage-string 
-    (format "Usage: ~s <id>"
-            (path->string (find-system-path 'run-file))))
-
-  (unless (= 1 (vector-length args))
-      (begin 
-        (displayln usage-string)
-        null))
-
-  args)
-
-;;----------------
 (define (get-game-data-xml id)
-  ;; @@TODO Not used
-  ;; Download game data from BGG
+  ;; Download game data from BGG as XML
   ;; get-game-data-xml :: String -> SXML
   (define host "boardgamegeek.com")
-  (define uri (format "/xmlapi2/thing?stats=1&id=~s" (string->number id)))
+  (define uri (format "/xmlapi2/thing?stats=1&id=~a" id))
   (define headers '())
   (~> (https-get host uri headers)
       (ssax:xml->sxml '())))
 
-(define (get-game-data id)
+#;(define (get-game-data id)
   ;; Return game data as JSON
   ;; get-game-data :: String -> JSExpr
   (~>> id
@@ -62,25 +46,25 @@
        xml-to-json))
 
 ;;----------------
-(define (hash-filter key value lst)
+#;(define (hash-filter key value lst)
   ;; hash-filter :: k -> v -> List (Hash k v) -> List (Hash k v)
   ;; Filter a list of hashes based on a key-value match
   (filter (λ (e) (string=? (hash-ref e key) value)) lst))
 
-(define (hash-vals key lst)
+#;(define (hash-vals key lst)
   ;; hash-vals :: k -> List (Hash k v) -> List v
   ;; Return a list of values for a given key from a list of hashes
-  ;; This is lifting hash-ref over lists
+  ;; This is just lifting hash-ref over lists
   (map (λ (e) (hash-ref e key)) lst))
 
-(define (json-pointer-value-or p1 p2 data)
+#;(define (json-pointer-value-or p1 p2 data)
   ;; Get value at p1. If error, try p2.
   (with-handlers
       ([exn:fail?
         (λ (exn) (json-pointer-value p2 data))])
     (json-pointer-value p1 data)))
 
-(define (extract-fields id data)
+#;(define (extract-fields id data)
   (hash 'name (json-pointer-value-or "/items/item/name/0/value"
                                      "/items/item/name/value"
                                      data)
@@ -130,11 +114,11 @@
             second)))))
 
 (define (lookup-game id)
-  ;; lookup-game : String -> JSExpr
-  ;; Look up data for a game id and return as JSON
+  ;; lookup-game : String -> Hash k v
+  ;; Look up data for a game id and return as a hash
   (~>> id
-       get-game-data
-       (extract-fields id)))
+       get-game-data-xml
+       (extract-xml-fields id)))
 
 (define (lookup-all-games ids)
   ;; lookup-all-games :: List String -> List JSExpr
@@ -142,7 +126,7 @@
     (begin
       (sleep 0.1) ; rate-limit the API calls to prevent error
       (~>> id
-           get-game-data
-           (extract-fields id)))))
+           get-game-data-xml
+           (extract-xml-fields id)))))
 
 ;; The End
