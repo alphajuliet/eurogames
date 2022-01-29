@@ -1,7 +1,7 @@
 #!/usr/bin/env racket
 #lang racket
 
-;; Download game data from BGG
+;; Download game data from BoardGameGeek
 ;; Andrew 2022-01
 
 (require sxml
@@ -32,17 +32,20 @@
         item
         (first item))))
 
+(define get-number
+  (compose string->number get-item))
+
 (define (extract-fields id data)
   ;; Extract the values of interest from the SXML as a hash
   ;; extract-xml-fields : String -> SXML -> Hash Symbol (String | Number)
   (hash 'name (get-item "//items/item/name[@type='primary']/@value/text()" data)
         'id (string->number id)
-        'complexity (string->number (get-item "//items/item/statistics/ratings/averageweight/@value/text()" data))
-        'ranking (string->number (get-item "//items/item/statistics/ratings/ranks/rank[@name='boardgame']/@value/text()" data))
-        'rating (string->number (get-item "//items/item/statistics/ratings/average/@value/text()" data))
-        'playingTime (string->number (get-item "//items/item/playingtime/@value/text()" data))
-        'minPlayers (string->number (get-item "//items/item/minplayers/@value/text()" data))
-        'maxPlayers (string->number (get-item "//items/item/maxplayers/@value/text()" data))
+        'complexity (get-number "//items/item/statistics/ratings/averageweight/@value/text()" data)
+        'ranking (get-number "//items/item/statistics/ratings/ranks/rank[@name='boardgame']/@value/text()" data)
+        'rating (get-number "//items/item/statistics/ratings/average/@value/text()" data)
+        'playingTime (get-number "//items/item/playingtime/@value/text()" data)
+        'minPlayers (get-number "//items/item/minplayers/@value/text()" data)
+        'maxPlayers (get-number "//items/item/maxplayers/@value/text()" data)
         'category ((sxpath "//items/item/link[@type='boardgamecategory']/@value/text()") data)
         'retrieved (date->iso8601 (today))))
 
@@ -56,13 +59,14 @@
             second)))))
 
 (define (lookup-game id)
-  ;; lookup-game : String -> Hash k v
-  ;; Look up data for a game id and return as a hash
+  ;; lookup-game : String -> Hash Symbol v
+  ;; Look up selected data for a game id and return as a hash
   (~>> id
        get-game-data
        (extract-fields id)))
 
 (define (lookup-all-games ids)
+  ;; Get data on all the games in the list of IDs
   ;; lookup-all-games :: List String -> List JSExpr
   (for/list ([id (in-list ids)])
     (begin

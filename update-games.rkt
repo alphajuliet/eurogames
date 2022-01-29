@@ -1,9 +1,7 @@
 #!/usr/bin/env racket
 #lang racket
 
-(require json
-         json-pointer
-         threading
+(require threading
          rakeda
          (prefix-in bgg: "./bgg.rkt")
          (prefix-in air: "./airtable.rkt"))
@@ -20,21 +18,21 @@
   ;; Determine updates to Airtable
   ;; extract-fields :: Hash k v -> Hash k v
   (~>> bgg-data
-       (r/select-keys '(id ranking complexity yearPublished playingTime minPlayers maxPlayers category))
+       (r/select-keys '(id record-id ranking complexity yearPublished playingTime minPlayers maxPlayers category))
        (hash-update _ 'complexity (λ (x) (rounded-to x 0.01)))))
 
 ;;-----------------------
-(define (update-game game)
+(define (transform-game game)
   ;; Given the Airtable entry, extract data from BGG for a game and update the Airtable record.
   ;; update-game :: Hash k v -> ()
-  (define record (hash-ref game 'id))
-  (define name (r/get-in '(fields name) game))
-  (define bgg-id (number->string (r/get-in '(fields id) game)))
-  (displayln (format "# Update ~a, id ~a, record ~a" name bgg-id record))
+  (define record-id (hash-ref game 'id))
+  (define name (r/get-in game '(fields name)))
+  (define bgg-id (number->string (r/get-in game '(fields id))))
+  (displayln (format "# Update ~a, id ~a, record ~a" name bgg-id record-id))
   (~> bgg-id
       bgg:lookup-game
-      extract-fields
-      (air:update-record record _)))
+      (hash-set 'record-id record-id)
+      extract-fields))
 
 ;;-----------------------
 (define (game-id id games)
@@ -43,8 +41,12 @@
 
 (define/contract (update-game-id id [games (air:get-all-records)])
   ;; Update a game, given just the BGG ID as a number
+  ;; update-game-id :: Number -> (List a) -> IO ()
   (->* (number?) (list?) any)
-  (update-game (first (game-id id games))))
+  (~> id
+      (game-id games)
+      (map transform-game _)
+      air:update-records))
 
 ;;-----------------------
 (define (get-categories game)
@@ -53,9 +55,24 @@
        bgg:lookup-game
        (r/select-keys '(category))))
 
+(define (batch-sizes b n)
+  ;; Return the counts in each batch of size b of n elements
+  (map length (group-by (λ (x) (quotient x b)) (range n))))
+
+(define (in-batch-of n fn data)
+  ;; Apply fn to batches of n data items. Assumes fn has side effects.
+  (foldl (λ (batch-size acc)
+           (define this-data (take acc batch-size))
+           (fn this-data)
+           (drop acc batch-size))
+         data
+         (batch-sizes 10 (length data))))
+
 ;;-----------------------
 (define (go)
   ;; Do all the games in Airtable
-  (map update-game (air:get-all-records)))
+  (~>> (air:get-all-records)
+       (map transform-game)
+       (in-batch-of 9 air:update-records)))
 
 ;; The End

@@ -8,6 +8,7 @@
 (require json
          net/uri-codec
          threading
+         rakeda
          (prefix-in h: "http.rkt"))
 
 (provide (all-defined-out))
@@ -46,8 +47,8 @@
   (read-json (h:https-get host full-uri headers)))
 
 ;;----------------
-;; Aggregate data over multiple paginated calls
 (define (get-all-records [records (list)] [offset ""])
+  ;; Aggregate data over multiple paginated calls
   (let* ([resp (get-page offset)]
          [data (append records (hash-ref resp 'records))])
     (if (hash-has-key? resp 'offset)
@@ -63,26 +64,34 @@
   (displayln (format "# Write rows to ~a" fname))
   (write-json lst out-file))
 
-(define (encode-record record-id data)
-  ;; Encode a single record for update
-  ;; encode-data :: Hash k v -> String
-  (define update-data
-    (hash 'records (list
-                    (hash 'id  record-id
-                          'fields data))))
-  (with-output-to-string (λ () (write-json update-data))))
-
 ;;----------------
-(define (update-record record-id new-data)
-  ;; Update the Airtable record with the given data
+(define (encode-record data)
+  ;; Encode a single record for update
+  ;; encode-data :: Hash Symbol v -> Hash Symbol v
+  (hash 'id  (hash-ref data 'record-id)
+        'fields (~> data
+                    (hash-remove 'record-id)
+                    (hash-remove 'category))))
+
+(define/contract (encode-records data)
+  ;; Encode a list of records
+  ;; encode-records List (Hash Symbol v) -> String
+  (-> list? string?)
+  (with-output-to-string
+    (λ () (write-json (~>> data
+                           (map encode-record)
+                           (hash 'records))))))
+
+(define (update-records new-data)
+  ;; Update Airtable records with the given data
   ;; update-record :: String -> Hash k v -> ()
   (define host "api.airtable.com")
   (define uri "/v0/appawmxJtv4xJYiT3/games")
   (define api-key (getenv "AIRTABLE_API_KEY"))
+  (define payload (encode-records new-data))
   (define headers (list (format "Authorization: Bearer ~a" api-key)
                         "Content-Type: application/json"))
-
-  ;; (displayln (format "# Updating ~a~a with ~a" host uri encoded-data))
-  (h:https-patch host uri (encode-record record-id new-data) headers))
+  (displayln (format "# Updating ~a~a with ~a" host uri payload))
+  (h:https-patch host uri payload headers))
 
 ;; The End
