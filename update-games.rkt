@@ -57,6 +57,8 @@
 
 (define (batch-sizes b n)
   ;; Return the counts in each batch of size b of n elements
+  ;; e.g. (batch-sizes 5 12) => '(5 5 2)
+  ;; batch-sizes :: Number -> List a -> List Number
   (map length (group-by (λ (x) (quotient x b)) (range n))))
 
 (define (in-batch-of n fn data)
@@ -66,13 +68,13 @@
            (fn this-data)
            (drop acc batch-size))
          data
-         (batch-sizes 10 (length data))))
+         (batch-sizes n (length data))))
 
 ;;-----------------------
 (define (go)
   ;; Do all the games in Airtable
   (~>> (air:get-all-records)
        (map transform-game)
-       (in-batch-of 9 air:update-records)))
+       (in-batch-of 10 air:update-records)))
 
 ;; The End
