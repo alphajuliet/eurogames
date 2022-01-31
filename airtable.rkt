@@ -68,10 +68,10 @@
 (define (encode-record data)
   ;; Encode a single record for update
   ;; encode-data :: Hash Symbol v -> Hash Symbol v
-  (hash 'id  (hash-ref data 'record-id)
+  (hash 'id (hash-ref data 'record-id)
         'fields (~> data
                     (hash-remove 'record-id)
-                    (hash-remove 'category))))
+                    #;(hash-remove 'category))))
 
 (define/contract (encode-records data)
   ;; Encode a list of records
@@ -80,7 +80,8 @@
   (with-output-to-string
     (λ () (write-json (~>> data
                            (map encode-record)
-                           (hash 'records))))))
+                           (hash 'records)
+                           (hash-set _ 'typecast #t))))))
 
 (define (update-records new-data)
   ;; Update Airtable records with the given data

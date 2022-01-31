@@ -18,7 +18,8 @@
   ;; Determine updates to Airtable
   ;; extract-fields :: Hash k v -> Hash k v
   (~>> bgg-data
-       (r/select-keys '(id record-id ranking complexity yearPublished playingTime minPlayers maxPlayers category))
+       (r/select-keys '(id record-id ranking complexity yearPublished playingTime 
+                        minPlayers maxPlayers category mechanic))
        (hash-update _ 'complexity (λ (x) (rounded-to x 0.01)))))
 
 ;;-----------------------

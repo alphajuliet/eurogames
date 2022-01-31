@@ -46,7 +46,9 @@
         'playingTime (get-number "//items/item/playingtime/@value/text()" data)
         'minPlayers (get-number "//items/item/minplayers/@value/text()" data)
         'maxPlayers (get-number "//items/item/maxplayers/@value/text()" data)
+        'yearPublished (get-number "//items/item/yearpublished/@value/text()" data)
         'category ((sxpath "//items/item/link[@type='boardgamecategory']/@value/text()") data)
+        'mechanic ((sxpath "//items/item/link[@type='boardgamemechanic']/@value/text()") data)
         'retrieved (date->iso8601 (today))))
 
 (define (get-ids [fname "./data/game-ids.txt"])
