@@ -19,7 +19,7 @@
   ;; extract-fields :: Hash k v -> Hash k v
   (~>> bgg-data
        (r/select-keys '(id record-id ranking complexity yearPublished playingTime 
-                        minPlayers maxPlayers category mechanic))
+                           minPlayers maxPlayers category mechanic))
        (hash-update _ 'complexity (λ (x) (rounded-to x 0.01)))))
 
 ;;-----------------------
@@ -37,17 +37,20 @@
 
 ;;-----------------------
 (define (game-id id games)
-  ;; Get the Airtable game data with the given numeric ID
-  (filter (λ (g) (eq? id (~> g (hash-ref 'fields) (hash-ref 'id)))) games))
+  ;; Get the Airtable game data with the given numeric ID, or #f if not found
+  (define data (filter (λ (g) (eq? id (r/get-in g '(fields id)))) games))
+  (if (empty? data)
+      #f
+      data))
 
 (define/contract (update-game-id id [games (air:get-all-records)])
   ;; Update a game, given just the BGG ID as a number
   ;; update-game-id :: Number -> (List a) -> IO ()
   (->* (number?) (list?) any)
-  (~> id
-      (game-id games)
-      (map transform-game _)
-      air:update-records))
+  (and~> id
+         (game-id games)
+         (map transform-game _)
+         air:update-records))
 
 ;;-----------------------
 (define (get-categories game)

@@ -1,6 +1,4 @@
-#!/usr/bin/env racket
 #lang racket
-
 ;; Download latest game metadata from Airtable.
 ;; No error checking yet.
 ;; Andrew 2018-07-28
