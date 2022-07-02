@@ -6,6 +6,9 @@
          (prefix-in bgg: "./bgg.rkt")
          (prefix-in air: "./airtable.rkt"))
 
+(provide go
+         update-game-id)
+
 ;;-----------------------
 (define (rounded-to x p)
   ;; Round x to precision p
@@ -79,6 +82,6 @@
   ;; Do all the games in Airtable
   (~>> (air:get-all-records)
        (map transform-game)
-       (in-batch-of 10 air:update-records)))
+       (in-batch-of 8 air:update-records)))
 
 ;; The End

@@ -14,6 +14,12 @@
 ;;----------------
 ;; Download track metadata from Airtable
 
+(define (get-env-variable name)
+  (define val (getenv name))
+  (if (false? val)
+      (read)
+      val))
+
 (define (get-record id)
   ;; Get a single record as a JSExpr
   (define host "api.airtable.com")
