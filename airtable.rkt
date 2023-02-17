@@ -24,7 +24,7 @@
   ;; Get a single record as a JSExpr
   (define host "api.airtable.com")
   (define base-uri "/v0/appawmxJtv4xJYiT3/games/")
-  (define api-key (getenv "AIRTABLE_API_KEY"))
+  (define api-key (getenv "AIRTABLE_TOKEN"))
   (define headers (list (format "Authorization: Bearer ~a" api-key)))
   (define full-uri (string-append base-uri id))
   ;; (displayln (format "GET ~s" full-uri))
