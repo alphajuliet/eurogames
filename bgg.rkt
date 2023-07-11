@@ -72,7 +72,7 @@
   ;; lookup-all-games :: List String -> List JSExpr
   (for/list ([id (in-list ids)])
     (begin
-      (sleep 0.1) ; rate-limit the API calls to prevent error
+      (sleep 0.15) ; rate-limit the API calls to prevent error
       (~>> id
            get-game-data
            (extract-fields id)))))

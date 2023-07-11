@@ -35,7 +35,7 @@
   ;; Get all records
   (define host "api.airtable.com")
   (define base-uri "/v0/appawmxJtv4xJYiT3/games")
-  (define api-key (getenv "AIRTABLE_API_KEY"))
+  (define api-key (getenv "AIRTABLE_TOKEN"))
   (define headers (list (format "Authorization: Bearer ~a" api-key)))
 
   ; Set up page offset if required
@@ -92,7 +92,7 @@
   ;; update-record :: String -> Hash k v -> ()
   (define host "api.airtable.com")
   (define uri "/v0/appawmxJtv4xJYiT3/games")
-  (define api-key (getenv "AIRTABLE_API_KEY"))
+  (define api-key (getenv "AIRTABLE_TOKEN"))
   (define payload (encode-records new-data))
   (define headers (list (format "Authorization: Bearer ~a" api-key)
                         "Content-Type: application/json"))
