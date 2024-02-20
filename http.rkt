@@ -18,7 +18,7 @@
 
   (if (not (regexp-match #rx".+200.+" status))
       (begin
-        (displayln (format "Error: ~s" status)
+        (displayln (format "Error ~s in GET from ~a/~a" status host uri)
                    (current-error-port))
         (exit 1))
       resp))
