@@ -56,7 +56,9 @@
   (let* ([resp (get-page offset)]
          [data (append records (hash-ref resp 'records))])
     (if (hash-has-key? resp 'offset)
-        (get-all-records data (hash-ref resp 'offset))
+        (begin0
+          (get-all-records data (hash-ref resp 'offset))
+          (sleep 0.1))
         ;;else
         data)))
 
