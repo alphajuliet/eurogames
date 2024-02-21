@@ -9,18 +9,24 @@
          threading
          gregor
          json
+         "gamesdb.rkt"
          (prefix-in h: "http.rkt"))
 
 (provide (all-defined-out))
 
-(define test-xml "https://boardgamegeek.com/xmlapi2/thing?stats=1&id=50")
+;; (define test-xml "https://boardgamegeek.com/xmlapi2/thing?stats=1&id=50")
 
+(define (to-string x)
+  (if (number? x) (number->string x) x))
+
+(define (to-number x)
+  (if (string? x) (string->number x) x))
 ;;----------------
 ;; Download game data from BGG as XML
 ;; get-game-data-xml :: String -> SXML
 (define (get-game-data id)
   (define host "boardgamegeek.com")
-  (define uri (format "/xmlapi2/thing?stats=1&id=~a" id))
+  (define uri (format "/xmlapi2/thing?stats=1&id=~a" (to-string id)))
   (define headers '())
   (~> (h:https-get host uri headers)
       (ssax:xml->sxml '())))
@@ -30,8 +36,8 @@
 (define (get-item xpath data)
   (let ([item ((sxpath xpath) data)])
     (if (empty? item)
-      item
-      (first item))))
+        item
+        (first item))))
 
 (define get-number
   (compose string->number get-item))
@@ -40,7 +46,7 @@
 ;; extract-xml-fields : String -> SXML -> Hash Symbol (String | Number)
 (define (extract-fields id data)
   (hash 'name (get-item "//items/item/name[@type='primary']/@value/text()" data)
-        'id (string->number id)
+        'id (to-number id)
         'complexity (get-number "//items/item/statistics/ratings/averageweight/@value/text()" data)
         'ranking (get-number "//items/item/statistics/ratings/ranks/rank[@name='boardgame']/@value/text()" data)
         'rating (get-number "//items/item/statistics/ratings/average/@value/text()" data)
@@ -51,15 +57,6 @@
         'category ((sxpath "//items/item/link[@type='boardgamecategory']/@value/text()") data)
         'mechanic ((sxpath "//items/item/link[@type='boardgamemechanic']/@value/text()") data)
         'retrieved (date->iso8601 (today))))
-
-;; Return all the IDs as a list
-(define (get-ids [fname "./data/game-ids.txt"])
-  (with-input-from-file fname
-                        (λ ()
-                           (for/list ([line (in-lines)])
-                                     (~> line
-                                         (string-split ",")
-                                         second)))))
 
 ;; Look up selected data for a game id and return as a hash
 ;; lookup-game : String -> Hash Symbol v
@@ -72,11 +69,11 @@
 ;; lookup-all-games :: List String -> List JSExpr
 (define (lookup-all-games ids)
   (for/list ([id (in-list ids)])
-            (begin
-              (sleep 0.15)
-              (~>> id
-                   get-game-data
-                   (extract-fields id)))))
+    (begin
+      (sleep 0.2)
+      (~>> id
+           get-game-data
+           (extract-fields id)))))
 
 (define (to-json h)
   (with-output-to-string
@@ -84,9 +81,13 @@
       (write-json h #:indent #f))))
 
 (module+ main
-         (define args (current-command-line-arguments))
-         (define id (vector-ref args 0))
-         (to-json (lookup-game id)))
-         
+  (define args (current-command-line-arguments))
+  (if (= 0 (vector-length args))
+      ;; Get game data for first three IDs
+      (lookup-all-games (take (db-get-all-ids) 3))
+      ;; else just the requested one
+      (~> args
+          (vector-ref 0)
+          (lookup-game))))
 
 ;; The End
