@@ -8,6 +8,7 @@
          sxml/sxpath
          threading
          gregor
+         json
          (prefix-in h: "http.rkt"))
 
 (provide (all-defined-out))
@@ -77,8 +78,15 @@
                    get-game-data
                    (extract-fields id)))))
 
+(define (to-json h)
+  (with-output-to-string
+    (λ ()
+      (write-json h #:indent #f))))
+
 (module+ main
-         (lookup-game "62219"))
+         (define args (current-command-line-arguments))
+         (define id (vector-ref args 0))
+         (to-json (lookup-game id)))
          
 
 ;; The End
