@@ -9,12 +9,11 @@
          threading
          gregor
          json
+         csv-writing
          "gamesdb.rkt"
          (prefix-in h: "http.rkt"))
 
 (provide (all-defined-out))
-
-;; (define test-xml "https://boardgamegeek.com/xmlapi2/thing?stats=1&id=50")
 
 (define (to-string x)
   (if (number? x) (number->string x) x))
@@ -31,9 +30,9 @@
   (~> (h:https-get host uri headers)
       (ssax:xml->sxml '())))
 
-;; get-item :: String -> SXML -> a
-;; Get the item at the XPath location
 (define (get-item xpath data)
+  ;; get-item :: String -> SXML -> a
+  ;; Get the item at the XPath location
   (let ([item ((sxpath xpath) data)])
     (if (empty? item)
         item
@@ -42,9 +41,9 @@
 (define get-number
   (compose string->number get-item))
 
-;; Extract the values of interest from the SXML as a hash
-;; extract-xml-fields : String -> SXML -> Hash Symbol (String | Number)
 (define (extract-fields id data)
+  ;; Extract the values of interest from the SXML as a hash
+  ;; extract-xml-fields : String -> SXML -> Hash Symbol (String | Number)
   (hash 'name (get-item "//items/item/name[@type='primary']/@value/text()" data)
         'id (to-number id)
         'complexity (get-number "//items/item/statistics/ratings/averageweight/@value/text()" data)
@@ -58,33 +57,49 @@
         'mechanic ((sxpath "//items/item/link[@type='boardgamemechanic']/@value/text()") data)
         'retrieved (date->iso8601 (today))))
 
-;; Look up selected data for a game id and return as a hash
-;; lookup-game : String -> Hash Symbol v
 (define (lookup-game id)
+  ;; Look up selected data for a game id and return as a hash
+  ;; lookup-game : String -> Hash Symbol v
   (~>> id
        get-game-data
        (extract-fields id)))
 
-;; Get data on all the games in the list of IDs
-;; lookup-all-games :: List String -> List JSExpr
 (define (lookup-all-games ids)
+  ;; Get data on all the games in the list of IDs
+  ;; lookup-all-games :: List String -> List JSExpr
   (for/list ([id (in-list ids)])
     (begin
-      (sleep 0.2)
+      (sleep 0.5)
       (~>> id
            get-game-data
            (extract-fields id)))))
 
 (define (to-json h)
+  ;; Write a hash to JSON
   (with-output-to-string
     (λ ()
       (write-json h #:indent #f))))
+
+(define (convert-hash-values h)
+  (for/list ([v (in-hash-values h)])
+    (if (list? v)
+        (string-join v ",")
+        v)))
+
+;; Write a list of hashes to a CSV string
+(define (hashes-to-csv lst)
+  (define header (hash-keys (first lst)))
+  (define vals (map convert-hash-values lst))
+  (display-table (append (list header) vals)))
 
 (module+ main
   (define args (current-command-line-arguments))
   (if (= 0 (vector-length args))
       ;; Get game data for first three IDs
-      (lookup-all-games (take (db-get-all-ids) 3))
+      (~> (db-get-all-ids)
+          ; (take 10)
+          (lookup-all-games)
+          (hashes-to-csv))
       ;; else just the requested one
       (~> args
           (vector-ref 0)
