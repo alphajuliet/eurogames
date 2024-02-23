@@ -1,6 +1,7 @@
 /target
 /classes
 /checkouts
+/src/sync/compiled
 /data
 /compiled
 profiles.clj
