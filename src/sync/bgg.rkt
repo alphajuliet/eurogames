@@ -46,7 +46,7 @@
   ;; extract-xml-fields : String -> SXML -> Hash Symbol (String | Number)
   (hash 'name (get-item "//items/item/name[@type='primary']/@value/text()" data)
         'id (to-number id)
-        'complexity (get-number "//items/item/statistics/ratings/averageweight/@value/text()" data)
+        'weight (get-number "//items/item/statistics/ratings/averageweight/@value/text()" data)
         'ranking (get-number "//items/item/statistics/ratings/ranks/rank[@name='boardgame']/@value/text()" data)
         'rating (get-number "//items/item/statistics/ratings/average/@value/text()" data)
         'playingTime (get-number "//items/item/playingtime/@value/text()" data)
@@ -86,6 +86,10 @@
         (string-join v ",")
         v)))
 
+;; Write a single hash to CSV
+(define (hash-to-csv h)
+  (display-table (append (list (hash-keys h) (convert-hash-values h)))))
+
 ;; Write a list of hashes to a CSV string
 (define (hashes-to-csv lst)
   (define header (hash-keys (first lst)))
@@ -103,6 +107,7 @@
       ;; else just the requested one
       (~> args
           (vector-ref 0)
-          (lookup-game))))
+          (lookup-game)
+          (hash-to-csv))))
 
 ;; The End
