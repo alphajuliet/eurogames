@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.29
+# v0.19.39
 
 using Markdown
 using InteractiveUtils
@@ -10,57 +10,85 @@ using
 	TidierData, 
 	TidierDates,
 	DataFrames, 
-	VegaLite
+	VegaLite,
+	SQLite,
+	Dates
 
 # ╔═╡ f5272866-70a3-11ee-2335-4de6a72ce4bf
-# Analyse game logs
+md"# Analyse game logs"
 
-# ╔═╡ 404dea43-db34-4098-acdc-7477533fbbe6
-games = @chain "data/games.csv" begin
-	CSV.read(DataFrame)
+# ╔═╡ 8b9c273f-b824-42a1-9cda-c395d4cab698
+md"Read from the SQLite3 database"
+
+# ╔═╡ d652fa5a-ccaa-4cb8-a1b7-2d89f94c941f
+begin
+	db = SQLite.DB("/Users/andrew/Documents/Projects/games/eurogames/data/games.db");
+	log = DBInterface.execute(db, "SELECT * FROM log") |> DataFrame
+	bgg = DBInterface.execute(db, "SELECT * FROM bgg") |> DataFrame
 end;
-
-# ╔═╡ f459917d-ee05-4c81-af57-2499a2f735f0
-names(games)
-
-# ╔═╡ b9f1bda7-b858-40e4-9b10-9c4de4c3f110
-logs = @chain "data/game-log.csv" begin
-	CSV.read(DataFrame)
-	@mutate(Date = dmy(Date))
-end;
-
-# ╔═╡ 2a584d6e-9ee6-44a9-8b79-fca82419a7a2
-names(logs)
 
 # ╔═╡ b95f8a62-a40f-4263-a184-c1a7cc4a3757
-# Augment logs with games data
+md"Augment logs with games data"
 
-# ╔═╡ 2f75f7ad-7d35-4f7a-a418-8791eaf98c64
-logs1 = @chain logs begin
-	@left_join(games, Game = name)
-	@select(Date, Game, Winner, complexity)
-	@mutate(Andrew = (Winner == "Andrew"))
-	@select(-Winner)
+# ╔═╡ bd762c2b-9425-4e2e-b962-ee5a62034101
+games = @chain log begin
+	@left_join(bgg, id = id)
+	@mutate(date = ymd(date))
 end;
 
-# ╔═╡ d6f1693c-366a-4b87-b622-d8b0375acaa6
+# ╔═╡ e28874aa-3784-4387-a193-18bdd65f83cf
+names(games)
 
+# ╔═╡ 2f75f7ad-7d35-4f7a-a418-8791eaf98c64
+wins = @chain games begin
+	@select(date, name, winner, complexity)
+	@mutate(Andrew = (winner == "Andrew"),
+			Trish = (winner == "Trish"))
+	@select(-winner)
+end;
 
 # ╔═╡ 1ddf7f86-9619-48ce-a410-55ca0e798448
-wins = @chain logs1 begin
-	@group_by(Game, complexity)
-	@summarise(n = n(), aj_wins = count(Andrew))
+wins1 = @chain wins begin
+	@group_by(name, complexity)
+	@summarise(n = n(), 
+			   aj_wins = count(Andrew), 
+			   tm_wins = -count(Trish),
+			   lastPlayed = maximum(date))
 	@ungroup
-	@mutate(tm_wins = aj_wins-n)
-end
+	@mutate(win_ratio = aj_wins/n)
+end;
+
+# ╔═╡ 03c930a3-f45e-44f0-afde-3785a6295ee8
+first(wins1, 10)
+
+# ╔═╡ 77b8b444-4780-4ab0-9ea6-41d38361283e
+md"## Visualisations"
+
+# ╔═╡ 7883834f-ef93-4ab0-a229-94ec667b25af
+played = @chain games begin
+	@group_by(name)
+	@summarise(n = n())
+end;
+
+# ╔═╡ 2b6be334-12ff-47f4-b95d-16d2cad7b30c
+played |>
+@vlplot(
+	mark = :bar,
+	x = :n,
+	y = {:name, sort = "-x"},
+	title = "Number of games played",
+	width = 400
+)
 
 # ╔═╡ 94ecf89f-f3f9-4476-ba98-32ed8f0b244f
-wins |>
+wins1 |>
 @vlplot(
 	x = {axis = {title = "Wins"}, 
-		 scale = {domain = [-20, 20]}},
-	y = :Game,
-	width = 450) +
+		 scale = {domain = [-40, 40]}},
+	y = {:name, 
+		 axis = {title = "Game"}},
+	width = 480,
+	title = "Wins by game") +
 @vlplot(
 	mark = {:bar, color = "#6688FF"},
 	x = :aj_wins) + 
@@ -71,11 +99,35 @@ wins |>
 	mark = {:text, align = "right", x = 20},
 	text = :n)
 
+# ╔═╡ 258082eb-0998-41e4-8a8e-a425b270a434
+@chain wins1 begin
+	@select(name, lastPlayed)
+	@mutate(d = today() - lastPlayed)
+	@arrange(desc(lastPlayed))
+end
+
+# ╔═╡ 877aa5ca-0d43-47ba-8e95-5e1d808573f5
+
+
+# ╔═╡ 4e3d7d67-1305-4ca4-a682-c63b1a61a974
+wins1 |>
+@vlplot(
+	mark = {:point, tooltip = true},
+	x = {:complexity, scale = {domain = [1.0, 4.0]}},
+	y = {:win_ratio, scale = {domain = [0, 1.0]}},
+	color = {:name, legend = false},
+	size = {:n, legend = false},
+	width = 640,
+	height = 480,
+	title = "Win ratio for Andrew vs complexity")
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
 TidierData = "fe2206b3-d496-4ee9-a338-6a095c4ece80"
 TidierDates = "20186a3f-b5d3-468e-823e-77aae96fe2d8"
 VegaLite = "112f6efa-9a02-5b7d-90c0-432ed331239a"
@@ -83,6 +135,7 @@ VegaLite = "112f6efa-9a02-5b7d-90c0-432ed331239a"
 [compat]
 CSV = "~0.10.11"
 DataFrames = "~1.6.1"
+SQLite = "~1.6.0"
 TidierData = "~0.12.2"
 TidierDates = "~0.1.0"
 VegaLite = "~3.2.3"
@@ -92,9 +145,9 @@ VegaLite = "~3.2.3"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.9.3"
+julia_version = "1.9.4"
 manifest_format = "2.0"
-project_hash = "718704c8994c62e083d991ce1aab5ed1e725fd07"
+project_hash = "df0f24de762e0d8fc492db648ba57836248d74b4"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -172,6 +225,11 @@ version = "1.5.4"
 git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
 uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
 version = "4.1.1"
+
+[[deps.DBInterface]]
+git-tree-sha1 = "6f93ab5557fa0ffd02e3d751186f329ac21da791"
+uuid = "a10d1c49-ce27-4219-8d33-6db1a4562965"
+version = "2.6.0"
 
 [[deps.DataAPI]]
 git-tree-sha1 = "8da84edb865b0b5b0100c0666a9bc9a0b71c553c"
@@ -278,6 +336,12 @@ git-tree-sha1 = "a3f24677c21f5bbe9d2a714f95dcd58337fb2856"
 uuid = "82899510-4779-5014-852e-03e436cf321d"
 version = "1.0.0"
 
+[[deps.JLLWrappers]]
+deps = ["Artifacts", "Preferences"]
+git-tree-sha1 = "7e5d6779a1e09a36db2a7b6cff50942a0a7d0fca"
+uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
+version = "1.5.0"
+
 [[deps.JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
 git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
@@ -304,12 +368,12 @@ version = "1.3.0"
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
 uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
-version = "0.6.3"
+version = "0.6.4"
 
 [[deps.LibCURL_jll]]
 deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll", "Zlib_jll", "nghttp2_jll"]
 uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
-version = "7.84.0+0"
+version = "8.4.0+0"
 
 [[deps.LibGit2]]
 deps = ["Base64", "NetworkOptions", "Printf", "SHA"]
@@ -318,7 +382,7 @@ uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 [[deps.LibSSH2_jll]]
 deps = ["Artifacts", "Libdl", "MbedTLS_jll"]
 uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
-version = "1.10.2+0"
+version = "1.11.0+1"
 
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
@@ -455,6 +519,18 @@ version = "1.3.0"
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 version = "0.7.0"
+
+[[deps.SQLite]]
+deps = ["DBInterface", "Random", "SQLite_jll", "Serialization", "Tables", "WeakRefStrings"]
+git-tree-sha1 = "eb9a473c9b191ced349d04efa612ec9f39c087ea"
+uuid = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
+version = "1.6.0"
+
+[[deps.SQLite_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "75e28667a36b5650b5cc4baa266c5760c3672275"
+uuid = "76ed43ae-9a5d-5a62-8c75-30186b810ce8"
+version = "3.45.0+0"
 
 [[deps.SentinelArrays]]
 deps = ["Dates", "Random"]
@@ -635,7 +711,7 @@ version = "5.8.0+0"
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
-version = "1.48.0+0"
+version = "1.52.0+1"
 
 [[deps.p7zip_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -644,16 +720,22 @@ version = "17.4.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═f5272866-70a3-11ee-2335-4de6a72ce4bf
+# ╟─f5272866-70a3-11ee-2335-4de6a72ce4bf
 # ╠═f8b6d297-296f-45f6-88d1-af3916bd6876
-# ╠═404dea43-db34-4098-acdc-7477533fbbe6
-# ╠═f459917d-ee05-4c81-af57-2499a2f735f0
-# ╠═b9f1bda7-b858-40e4-9b10-9c4de4c3f110
-# ╠═2a584d6e-9ee6-44a9-8b79-fca82419a7a2
-# ╠═b95f8a62-a40f-4263-a184-c1a7cc4a3757
+# ╟─8b9c273f-b824-42a1-9cda-c395d4cab698
+# ╠═d652fa5a-ccaa-4cb8-a1b7-2d89f94c941f
+# ╟─b95f8a62-a40f-4263-a184-c1a7cc4a3757
+# ╠═bd762c2b-9425-4e2e-b962-ee5a62034101
+# ╠═e28874aa-3784-4387-a193-18bdd65f83cf
 # ╠═2f75f7ad-7d35-4f7a-a418-8791eaf98c64
-# ╠═d6f1693c-366a-4b87-b622-d8b0375acaa6
 # ╠═1ddf7f86-9619-48ce-a410-55ca0e798448
+# ╠═03c930a3-f45e-44f0-afde-3785a6295ee8
+# ╟─77b8b444-4780-4ab0-9ea6-41d38361283e
+# ╠═7883834f-ef93-4ab0-a229-94ec667b25af
+# ╠═2b6be334-12ff-47f4-b95d-16d2cad7b30c
 # ╠═94ecf89f-f3f9-4476-ba98-32ed8f0b244f
+# ╠═258082eb-0998-41e4-8a8e-a425b270a434
+# ╠═877aa5ca-0d43-47ba-8e95-5e1d808573f5
+# ╠═4e3d7d67-1305-4ca4-a682-c63b1a61a974
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
