@@ -46,7 +46,7 @@
   ;; extract-xml-fields : String -> SXML -> Hash Symbol (String | Number)
   (hash 'name (get-item "//items/item/name[@type='primary']/@value/text()" data)
         'id (to-number id)
-        'weight (get-number "//items/item/statistics/ratings/averageweight/@value/text()" data)
+        'complexity (get-number "//items/item/statistics/ratings/averageweight/@value/text()" data)
         'ranking (get-number "//items/item/statistics/ratings/ranks/rank[@name='boardgame']/@value/text()" data)
         'rating (get-number "//items/item/statistics/ratings/average/@value/text()" data)
         'playingTime (get-number "//items/item/playingtime/@value/text()" data)
