@@ -11,11 +11,11 @@
   <tbody>
     {% for game in games %}
     <tr>
-      <td hx-get="/game/{{ game.id }}" hx-target="#content">{{ game.name }}</td>
-      <td>{{ game.id }}</td>
+      <td class="link" hx-get="/game/{{ game.id }}" hx-target="#content" hx-push-url="true">{{ game.name }}</td>
+      <td class="numeric">{{ game.id }}</td>
       <td>{{ game.status }}</td>
-      <td>{{ game.complexity }}</td>
-      <td>{{ game.ranking }} </td>
+      <td class="numeric">{{ game.complexity|round(1) }}</td>
+      <td class="numeric">{{ game.ranking }} </td>
     </tr>
     {% endfor %}
   </tbody>

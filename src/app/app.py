@@ -7,9 +7,6 @@ app = Flask(__name__)
 def main():
     return render_template("index.html")
 
-"""
-List all the games
-"""
 @app.route("/games")
 def games():
     db = Database("../../data/games.db")
@@ -27,3 +24,15 @@ def played():
     db = Database("../../data/games.db")
     results = db["played"].rows
     return render_template("played.html", results=results)
+
+@app.route("/winner")
+def winner():
+    db = Database("../../data/games.db")
+    games = db["winner"].rows
+    return render_template("winner.html", games=games)
+
+@app.route("/lastPlayed")
+def lastPlayed():
+    db = Database("../../data/games.db")
+    games = db["last_played"].rows
+    return render_template("last_played.html", games=games)

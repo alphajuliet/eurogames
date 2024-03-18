@@ -12,8 +12,8 @@
     {% for result in results %}
     <tr>
       <td>{{ result.date }}</td>
-      <td>{{ result.id }}</td>
-      <td hx-get="/game/{{ result.id }}" hx-target="#content">{{ result.name }}</td>
+      <td class="numeric">{{ result.id }}</td>
+      <td class="link" hx-get="/game/{{ result.id }}" hx-target="#content" hx-push-url="true">{{ result.name }}</td>
       <td>{{ result.winner }}</td>
       <td>{{ result.scores }} </td>
     </tr>

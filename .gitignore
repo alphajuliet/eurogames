@@ -2,6 +2,7 @@
 /classes
 /checkouts
 /src/sync/compiled
+/src/app/__pycache__
 /compiled
 profiles.clj
 pom.xml

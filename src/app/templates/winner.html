@@ -1,0 +1,22 @@
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Games</th>
+      <th>Andrew</th>
+      <th>Trish</th>
+      <th>Draw</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for game in games %}
+    <tr>
+      <td class="link" hx-get="/game/{{ game.id }}" hx-target="#content" hx-push-url="true">{{ game.name }}</td>
+      <td class="numeric">{{ game.Games|e }}</td>
+      <td class="numeric">{{ game.Andrew|int() }}</td>
+      <td class="numeric">{{ game.Trish|int() }}</td>
+      <td class="numeric">{{ game.Draw|int() }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

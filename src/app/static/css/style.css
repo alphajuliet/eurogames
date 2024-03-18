@@ -18,10 +18,6 @@ html {
   line-height: 1.4;
 }
 
-h1 {
-  color: purple;
-}
-
 /*
  * Remove text-shadow in selection highlight:
  * https://twitter.com/miketaylr/status/12228805301
@@ -88,6 +84,26 @@ textarea {
 /* ==========================================================================
    Author's custom styles
    ========================================================================== */
+
+header {
+  margin-bottom: 32pt;
+}
+
+h1 {
+  color: purple;
+  border-bottom: 1px solid #666;
+}
+
+th, td {
+  padding: 0 8pt;
+}
+
+.link:hover { cursor: pointer; }
+.link { color: blue}
+
+td.numeric {
+  text-align: right;
+}
 
 /* ==========================================================================
    Helper classes
