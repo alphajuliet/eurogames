@@ -1,0 +1,22 @@
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>ID</th>
+      <th>Status</th>
+      <th>Complexity</th>
+      <th>Ranking</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for game in games %}
+    <tr>
+      <td hx-get="/game/{{ game.id }}" hx-target="#content">{{ game.name }}</td>
+      <td>{{ game.id }}</td>
+      <td>{{ game.status }}</td>
+      <td>{{ game.complexity }}</td>
+      <td>{{ game.ranking }} </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

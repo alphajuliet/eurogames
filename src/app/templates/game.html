@@ -1,0 +1,8 @@
+<!-- Iterate over the items in the dictionary -->
+<ul>
+{% for dict_item in game %}
+    {% for key, value in dict_item.items() %}
+        <li>{{ key|e }}: {{ value|e }}</li>
+    {% endfor %}
+{% endfor %}
+</ul>

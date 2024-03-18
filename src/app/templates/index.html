@@ -1,0 +1,39 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Eurogames</title>
+  <link rel="stylesheet" href="css/style.css">
+  <meta name="description" content="Front end to the Eurogames database.">
+
+  <!-- <meta property="og:title" content=""> -->
+  <!-- <meta property="og:type" content=""> -->
+  <!-- <meta property="og:url" content=""> -->
+  <!-- <meta property="og:image" content=""> -->
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <!-- <link rel="icon" href="/icon.svg" type="image/svg+xml"> -->
+  <!-- <link rel="apple-touch-icon" href="icon.png"> -->
+
+  <!-- <link rel="manifest" href="site.webmanifest"> -->
+  <meta name="theme-color" content="#fafafa">
+  <script src="https://unpkg.com/htmx.org@1.9.2"
+    integrity="sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h" crossorigin="anonymous"></script>
+  </head>
+
+<body>
+  <header>
+    <h1>Eurogames</h1>
+    <p>
+      <span hx-get="/" hx-target="#content" hx-swap="outerHTML">Home</span>
+      <span hx-get="/games" hx-target="#content">Games</span>
+      <span hx-get="/played" hx-target="#content">Played</span>
+    </p>
+  </header>
+  <div id="content"></div>
+
+  <script src=""></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<table>
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Winner</th>
+      <th>Scores</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for result in results %}
+    <tr>
+      <td>{{ result.date }}</td>
+      <td>{{ result.id }}</td>
+      <td hx-get="/game/{{ result.id }}" hx-target="#content">{{ result.name }}</td>
+      <td>{{ result.winner }}</td>
+      <td>{{ result.scores }} </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
