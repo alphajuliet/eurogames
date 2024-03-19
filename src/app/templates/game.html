@@ -2,12 +2,12 @@
 <table>
     <tbody>
         {% for dict_item in game %}
-        {% for key, value in dict_item.items() %}
-        <tr>
-            <th style="text-align: right">{{ key|e }}</th>
-            <td>{{ value|e }}</td>
-        </tr>
-        {% endfor %}
+            {% for key, value in dict_item.items() %}
+            <tr>
+                <td style="text-align: right">{{ key|e }}</td>
+                <td>{{ value|e }}</td>
+            </tr>
+            {% endfor %}
         {% endfor %}
     </tbody>
 </table>

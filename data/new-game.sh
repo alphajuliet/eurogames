@@ -8,4 +8,4 @@ else
   CSV=$1
 fi
 
-sqlite-utils upsert games.db bgg ${CSV} --csv --detect-types --empty-null
+sqlite-utils upsert games.db bgg ${CSV} --csv --detect-types --empty-null --pk=rowid

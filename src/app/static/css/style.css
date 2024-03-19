@@ -85,13 +85,23 @@ textarea {
    Author's custom styles
    ========================================================================== */
 
+body {
+  margin: 32pt 0 0 32pt;
+  background-color: #222;
+  color: #ddd;
+}
+
 header {
   margin-bottom: 32pt;
 }
 
 h1 {
-  color: purple;
+  color: lightcoral;
   border-bottom: 1px solid #666;
+}
+
+th {
+  border-bottom: 1px solid #444;
 }
 
 th, td {
@@ -99,7 +109,7 @@ th, td {
 }
 
 .link:hover { cursor: pointer; }
-.link { color: blue}
+.link { color: lightskyblue;}
 
 td.numeric {
   text-align: right;
