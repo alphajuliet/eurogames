@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from sqlite_utils import Database
 
 app = Flask(__name__)
@@ -36,3 +36,22 @@ def lastPlayed():
     db = Database("../../data/games.db")
     games = db["last_played"].rows
     return render_template("last_played.html", games=games)
+
+@app.route("/addResult", methods=["POST"])
+def addResult():
+    print(request.form)
+    date = request.form.get('date')
+    id = int(request.form.get('id'))
+    winner = request.form.get('winner')
+    scores = request.form.get('score')
+    comment = request.form.get('comment')
+
+    db = Database("../../data/games.db")
+    rows = db.query("INSERT INTO log (date, id, winner, scores, comment) VALUES (:date, :id, :winner, :scores, :comment)", 
+                    {"date": date, "id": id, "winner": winner, "scores": scores, "comment": comment})
+
+    # Update results
+    results = db["played"].rows
+    return render_template("played.html", results=results)
+
+# The End

@@ -91,6 +91,15 @@ body {
   color: #ddd;
 }
 
+#content {
+  /* display: flex; */
+  align-content: right;
+}
+
+#viz {
+  margin-left: 20pt;
+}
+
 header {
   margin-bottom: 32pt;
 }
@@ -113,6 +122,24 @@ th, td {
 
 td.numeric {
   text-align: right;
+}
+
+label {
+  margin: 2pt 0;
+}
+
+input, select {
+  margin: 2pt 8pt 2pt 0;
+  padding: 2pt;
+  min-width: 100px;
+}
+
+#result-entry {
+  /* display: block; */
+  margin: 6pt 0 20pt 0;
+  border: 1px solid #888;
+  padding: 12pt;
+  max-width: 80%;
 }
 
 /* ==========================================================================

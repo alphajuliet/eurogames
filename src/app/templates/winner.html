@@ -1,22 +1,34 @@
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Games</th>
-      <th>Andrew</th>
-      <th>Trish</th>
-      <th>Draw</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for game in games %}
-    <tr>
-      <td class="link" hx-get="/game/{{ game.id }}" hx-target="#content" hx-push-url="true">{{ game.name }}</td>
-      <td class="numeric">{{ game.Games|e }}</td>
-      <td class="numeric">{{ game.Andrew|int() }}</td>
-      <td class="numeric">{{ game.Trish|int() }}</td>
-      <td class="numeric">{{ game.Draw|int() }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div id="table">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Games</th>
+        <th>Andrew</th>
+        <th>Trish</th>
+        <th>Draw</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for game in games %}
+      <tr>
+        <td class="link" hx-get="/game/{{ game.id }}" hx-target="#content" hx-push-url="true">{{ game.name }}</td>
+        <td class="numeric">{{ game.Games|e }}</td>
+        <td class="numeric">{{ game.Andrew|int() }}</td>
+        <td class="numeric">{{ game.Trish|int() }}</td>
+        <td class="numeric">{{ game.Draw|int() }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div id="viz">
+  <div id="myplot"></div>
+  <script type="module">
+    import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+    const plot = Plot.rectY({ length: 10000 }, Plot.binX({ y: "count" }, { x: Math.random })).plot();
+    const div = document.querySelector("#myplot");
+    div.append(plot);
+    // const data = {{ games|e }};
+  </script>
+</div>
