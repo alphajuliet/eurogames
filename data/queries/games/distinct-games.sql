@@ -1,1 +1,3 @@
-SELECT count(*) AS played, count(DISTINCT id) AS distinct_games FROM log
+SELECT DISTINCT bgg.name FROM log
+LEFT JOIN bgg on log.id = bgg.id
+ORDER BY bgg.name
