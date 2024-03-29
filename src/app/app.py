@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, flash, redirect, url_for
 from sqlite_utils import Database
+import os
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('FLASK_SECRET_KEY')
 
 @app.route("/")
 def main():
@@ -39,19 +41,26 @@ def lastPlayed():
 
 @app.route("/addResult", methods=["POST"])
 def addResult():
-    print(request.form)
-    date = request.form.get('date')
-    id = int(request.form.get('id'))
-    winner = request.form.get('winner')
-    scores = request.form.get('score')
-    comment = request.form.get('comment')
+    try:
+        date = request.form.get('date')
+        game_id = int(request.form.get('id'))  # Renamed variable to 'game_id' to avoid shadowing built-in 'id'
+        winner = request.form.get('winner')
+        scores = request.form.get('scores')  # Ensure this matches the database column name
+        comment = request.form.get('comment')
 
-    db = Database("../../data/games.db")
-    rows = db.query("INSERT INTO log (date, id, winner, scores, comment) VALUES (:date, :id, :winner, :scores, :comment)", 
-                    {"date": date, "id": id, "winner": winner, "scores": scores, "comment": comment})
+        db = Database("../../data/games.db")
+        # Make sure table name and column names match your schema
+        db.execute("INSERT INTO log (date, id, winner, scores, comment) VALUES (?, ?, ?, ?, ?)", 
+                   [date, game_id, winner, scores, comment])
+        db.conn.commit()  # Commit the transaction to save changes to the database
 
-    # Update results
-    results = db["played"].rows
-    return render_template("played.html", results=results)
+        flash('Result added successfully!', 'success')  # Flash a success message
+        return redirect(url_for('played'))  # Redirect to the 'played' route to show updated results
+
+    except Exception as e:
+        # For security reasons, don't use str(e) in production as it can expose underlying details
+        # Use a generic message instead, such as 'An error occurred. Please try again.'
+        flash(f'An error occurred: {str(e)}', 'error')  # Flash an error message
+        return redirect(url_for('played'))  # Optionally, redirect back to the results page
 
 # The End

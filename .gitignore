@@ -4,6 +4,7 @@
 /src/sync/compiled
 /src/app/__pycache__
 /compiled
+/.lsp
 profiles.clj
 pom.xml
 pom.xml.asc
