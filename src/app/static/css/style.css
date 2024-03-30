@@ -13,7 +13,7 @@
 
 html {
   color: #222;
-  font-size: 1em;
+  font-size: 0.85em;
   font-family: Inter, IBM Plex Sans, sans-serif;
   line-height: 1.4;
 }
@@ -109,12 +109,16 @@ h1 {
   border-bottom: 1px solid #666;
 }
 
+table {
+  float: left;
+}
+
 th {
   border-bottom: 1px solid #444;
 }
 
 th, td {
-  padding: 0 8pt;
+  padding: 4pt 8pt;
 }
 
 .link:hover { cursor: pointer; }
@@ -140,6 +144,11 @@ input, select {
   border: 1px solid #888;
   padding: 12pt;
   max-width: 80%;
+}
+
+#viz {
+  float: right;
+  margin-right: 20pt;
 }
 
 /* ==========================================================================

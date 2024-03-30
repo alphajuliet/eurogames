@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 from sqlite_utils import Database
 import os
 
@@ -21,18 +21,17 @@ def game(game_id):
     game = db.query("SELECT * FROM bgg WHERE id = :game", {"game": game_id})
     return render_template("game.html", game=iter(game))
 
-@app.route("/played")
+@app.route("/results")
 def played():
     db = Database("../../data/games.db")
     results = db["played"].rows
-    return render_template("played.html", results=results)
+    return render_template("results.html", results=results)
 
 @app.route("/winner")
 def winner():
     db = Database("../../data/games.db")
     games = db["winner"].rows
-    return render_template("winner.html", games=games)
-
+    return render_template("winner.html", games=list(games))
 @app.route("/lastPlayed")
 def lastPlayed():
     db = Database("../../data/games.db")

@@ -4,29 +4,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Eurogames</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <meta name="description" content="Front end to the Eurogames database.">
-
-  <!-- <meta property="og:title" content=""> -->
-  <!-- <meta property="og:type" content=""> -->
-  <!-- <meta property="og:url" content=""> -->
-  <!-- <meta property="og:image" content=""> -->
-
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <!-- <link rel="icon" href="/icon.svg" type="image/svg+xml"> -->
-  <!-- <link rel="apple-touch-icon" href="icon.png"> -->
-
-  <!-- <link rel="manifest" href="site.webmanifest"> -->
   <meta name="theme-color" content="#fafafa">
+  <title>Eurogames</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sortable-theme-dark.css') }}">
+  <script src="{{ url_for('static', filename='js/sortable.min.js') }}"></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/favicon.ico" sizes="any"/>
+
   <script src="https://unpkg.com/htmx.org@1.9.11"
-    integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
-  </head>
+    integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0"
+    crossorigin="anonymous"></script>
+</head>
 
 <body>
   {% include 'header.html' %}
   <div id="content"></div>
-  <script src=""></script>
 </body>
 
 </html>
