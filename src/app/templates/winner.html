@@ -1,5 +1,5 @@
 <div id="table">
-  <table class="sortable-theme-dark" data-sortable>
+  <table id="table-winner" class="sortable-theme-dark" data-sortable>
     <thead>
       <tr>
         <th>Name</th>
@@ -21,6 +21,7 @@
       {% endfor %}
     </tbody>
     <script type="text/javascript">
+      document.getElementById("table-winner").setAttribute("data-sortable-initialized", "false");
       Sortable.init();
     </script>
   </table>
@@ -41,7 +42,7 @@
       marks: [
         Plot.ruleX([0]),
         Plot.axisY({label: null, lineWidth: 20, marginRight: [20, 0, 20, 80]}),
-        Plot.barX(gameData, {x: "Andrew", y: "name", fill: "#8888ff"}),
+        Plot.barX(gameData, {x: "Andrew", y: "name", fill: "#88aaff"}),
         Plot.barX(gameData, {x: d => -d["Trish"], y: "name", fill: "#ff88cc"}),
       ]
     });

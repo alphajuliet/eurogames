@@ -1,4 +1,4 @@
-<table class="sortable-theme-dark" data-sortable>
+<table id="table-games" class="sortable-theme-dark" data-sortable>
   <thead>
     <tr>
       <th>Name</th>
@@ -20,6 +20,7 @@
     {% endfor %}
   </tbody>
   <script type="text/javascript">
+    document.getElementById("table-games").setAttribute("data-sortable-initialized", "false");
     Sortable.init();
   </script>
 </table>

@@ -1,5 +1,5 @@
 <!-- Last played -->
-<table class="sortable-theme-dark" data-sortable>
+<table id="table-last_played" class="sortable-theme-dark" data-sortable>
   <thead>
     <tr>
       <th>Date</th>
@@ -14,11 +14,12 @@
       <td>{{ game.lastPlayed|e }}</td>
       <td class="numeric">{{ game.daysSince|int() }}</td>
       <td class="numeric">{{ game.games|e }}</td>
-      <td>{{ game.name }}</td>
+      <td class="link"><a hx-get="/game/{{ game.id }}" hx-target="#content" hx-push-url="true">{{ game.name }}</a></td>
     </tr>
     {% endfor %}
   </tbody>
   <script type="text/javascript">
+    document.getElementById("table-last_played").setAttribute("data-sortable-initialized", "false");
     Sortable.init();
   </script>
 </table>
