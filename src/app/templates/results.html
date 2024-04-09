@@ -19,7 +19,7 @@
 </section>
 
 <section id="table">
-  <table>
+  <table id="table-results" class="sortable-theme-dark" data-sortable>
     <thead>
       <tr>
         <th>Date</th>
@@ -40,5 +40,9 @@
       </tr>
       {% endfor %}
     </tbody>
+  <script type="text/javascript">
+    document.getElementById("table-results").setAttribute("data-sortable-initialized", "false");
+    Sortable.init();
+  </script>
   </table>
 </section>
