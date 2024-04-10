@@ -1,25 +1,65 @@
 <!-- Last played -->
-<table id="table-last_played" class="sortable-theme-dark" data-sortable>
-  <thead>
-    <tr>
-      <th>Date</th>
-      <th>Days</th>
-      <th>Total played</th>
-      <th>Game</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for game in games %}
-    <tr>
-      <td>{{ game.lastPlayed|e }}</td>
-      <td class="numeric">{{ game.daysSince|int() }}</td>
-      <td class="numeric">{{ game.games|e }}</td>
-      <td class="link"><a hx-get="/game/{{ game.id }}" hx-target="#content" hx-push-url="true">{{ game.name }}</a></td>
-    </tr>
-    {% endfor %}
-  </tbody>
-  <script type="text/javascript">
-    document.getElementById("table-last_played").setAttribute("data-sortable-initialized", "false");
-    Sortable.init();
-  </script>
-</table>
+<div id="table">
+  <table id="table-last_played" class="sortable-theme-dark" data-sortable>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Days</th>
+        <th>Total played</th>
+        <th>Game</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for game in games %}
+      <tr>
+        <td>{{ game.lastPlayed|e }}</td>
+        <td class="numeric">{{ game.daysSince|int() }}</td>
+        <td class="numeric">{{ game.games|e }}</td>
+        <td class="link"><a hx-get="/game/{{ game.id }}" hx-target="#content" hx-push-url="true">{{ game.name }}</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <script type="text/javascript">
+      document.getElementById("table-last_played").setAttribute("data-sortable-initialized", "false");
+      Sortable.init();
+    </script>
+  </table>
+</div>
+<div id="viz">
+  <div id="gamesData" data-arr='{{ games|tojson }}'></div>
+  <div id="myplot"></div>
+</div>
+<script type="module">
+  import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+
+    const createPlot = function (gameData) {
+      const chart = Plot.plot({
+        x: {
+          axis: "top",
+          grid: true
+        },
+        y: { },
+        marks: [
+          Plot.ruleX([0]),
+          Plot.axisY({ label: null, lineWidth: 150 }),
+          Plot.barX(gameData, {
+            x: "daysSince", 
+            y: "name", 
+            sort: {y: "x"},
+            fill: "#aa88ff"
+          }),
+        ],
+        // width: 400,
+      });
+      return chart;
+    }
+
+  // Parse the games data from Flask and create the chart
+  const gamesDataElement = document.getElementById('gamesData');
+  const gamesData = gamesDataElement.getAttribute('data-arr');
+  console.log(gamesData);
+  const plot = createPlot(JSON.parse(gamesData));
+  const div = document.querySelector("#myplot");
+  div.appendChild(plot); // Append the created chart to the div
+</script>

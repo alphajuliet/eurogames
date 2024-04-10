@@ -36,7 +36,7 @@ def winner():
 def lastPlayed():
     db = Database("../../data/games.db")
     games = db["last_played"].rows
-    return render_template("last_played.html", games=games)
+    return render_template("last_played.html", games=list(games))
 
 @app.route("/addResult", methods=["POST"])
 def addResult():
