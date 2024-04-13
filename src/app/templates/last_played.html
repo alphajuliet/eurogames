@@ -32,28 +32,27 @@
 </div>
 <script type="module">
   import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
-
-    const createPlot = function (gameData) {
-      const chart = Plot.plot({
-        x: {
-          axis: "top",
-          grid: true
-        },
-        y: { },
-        marks: [
-          Plot.ruleX([0]),
-          Plot.axisY({ label: null, lineWidth: 150 }),
-          Plot.barX(gameData, {
-            x: "daysSince", 
-            y: "name", 
-            sort: {y: "x"},
-            fill: "#aa88ff"
-          }),
-        ],
-        // width: 400,
-      });
-      return chart;
-    }
+  const createPlot = function (gameData) {
+    const chart = Plot.plot({
+      x: {
+        axis: "top",
+        grid: true
+      },
+      y: {},
+      marks: [
+        Plot.ruleX([0]),
+        Plot.axisY({ label: null, lineWidth: 150 }),
+        Plot.barX(gameData, {
+          x: "daysSince",
+          y: "name",
+          sort: { y: "x" },
+          fill: "#aa88ff"
+        }),
+      ],
+      // width: 400,
+    });
+    return chart;
+  }
 
   // Parse the games data from Flask and create the chart
   const gamesDataElement = document.getElementById('gamesData');
