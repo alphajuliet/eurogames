@@ -55,5 +55,8 @@
   console.log(gamesData);
   const plot = createPlot(JSON.parse(gamesData));
   const div = document.querySelector("#myplot");
+  while (div.firstChild) {
+    div.removeChild(div.firstChild);
+  }
   div.appendChild(plot); // Append the created chart to the div
 </script>
