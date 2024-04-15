@@ -6,6 +6,7 @@
       <th>Status</th>
       <th>Complexity</th>
       <th>Ranking</th>
+      <th>Played</th>
     </tr>
   </thead>
   <tbody>
@@ -16,6 +17,7 @@
       <td>{{ game.status }}</td>
       <td class="numeric">{{ game.complexity|round(1) }}</td>
       <td class="numeric">{{ game.ranking }} </td>
+      <td class="numeric">{{ game.games|int }}</td>
     </tr>
     {% endfor %}
   </tbody>
