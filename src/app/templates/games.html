@@ -7,6 +7,7 @@
       <th>Complexity</th>
       <th>Ranking</th>
       <th>Played</th>
+      <th>Last played</th>
     </tr>
   </thead>
   <tbody>
@@ -15,9 +16,10 @@
       <td class="link" hx-get="/game/{{ game.id }}" hx-target="#content" hx-push-url="true">{{ game.name }}</td>
       <td class="numeric">{{ game.id }}</td>
       <td>{{ game.status }}</td>
-      <td class="numeric">{{ game.complexity|round(1) }}</td>
+      <td class="numeric">{{ game.complexity|round(2) }}</td>
       <td class="numeric">{{ game.ranking }} </td>
       <td class="numeric">{{ game.games|int }}</td>
+      <td>{{ game.lastPlayed|e }}</td>
     </tr>
     {% endfor %}
   </tbody>

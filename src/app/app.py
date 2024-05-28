@@ -12,7 +12,7 @@ def main():
 @app.route("/games")
 def games():
     db = Database("../../data/games.db")
-    games = db["game_list"].rows
+    games = db["game_list2"].rows
     return render_template("games.html", games=games)
 
 @app.route("/game/<game_id>")
