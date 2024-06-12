@@ -7,7 +7,7 @@
 
 (provide (all-defined-out))
 
-(define SQLDB "/Users/andrew/Documents/Projects/games/eurogames/data/games.db")
+(define SQLDB "/Users/andrew/LocalProjects/games/eurogames/data/games.db")
 (define gdb (sqlite3-connect #:database SQLDB))
 
 (define (db-get-all-ids)
