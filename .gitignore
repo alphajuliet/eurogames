@@ -5,6 +5,7 @@
 /src/app/__pycache__
 /compiled
 /.lsp
+venv/
 profiles.clj
 pom.xml
 pom.xml.asc
