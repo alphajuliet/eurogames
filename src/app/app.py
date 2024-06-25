@@ -18,7 +18,7 @@ def games():
 @app.route("/game/<game_id>")
 def game(game_id):
     db = Database("../../data/games.db")
-    game = db.query("SELECT * FROM bgg WHERE id = :game", {"game": game_id})
+    game = db.query("SELECT * FROM bgg LEFT JOIN notes ON bgg.id = notes.id WHERE bgg.id = :game", {"game": game_id})
     return render_template("game.html", game=iter(game))
 
 @app.route("/results")
