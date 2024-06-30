@@ -7,5 +7,5 @@ else
   game=$1
 fi
 
-sqlite-utils games.db "SELECT id, name, complexity FROM bgg WHERE name LIKE '%${game}%';"
+sqlite-utils games.db "SELECT id, name, complexity, ranking FROM bgg WHERE name LIKE '%${game}%';"
 
