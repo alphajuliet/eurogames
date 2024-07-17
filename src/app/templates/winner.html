@@ -35,15 +35,17 @@
 
   const createPlot = function (gameData) {
     const chart = Plot.plot({
+      width: 800,
+      marginLeft: 180,
       x: {
         axis: "top", 
         grid: true
       },
       marks: [
         Plot.ruleX([0]),
-        Plot.axisY({label: null, lineWidth: 20, marginRight: [20, 0, 20, 80]}),
         Plot.barX(gameData, {x: "Andrew", y: "name", fill: "#88aaff"}),
         Plot.barX(gameData, {x: d => -d["Trish"], y: "name", fill: "#ff88cc"}),
+        Plot.axisY({label: null }),
       ]
     });
     return chart;
