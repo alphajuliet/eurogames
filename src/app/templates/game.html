@@ -5,7 +5,14 @@
             {% for key, value in dict_item.items() %}
             <tr>
                 <td style="text-align: right">{{ key|e }}</td>
-                <td>{{ value|e }}</td>
+                <td>
+                    {% if key == 'uri' %}
+                        <a href="{{ value }}">{{ value|e }}</a>
+                    {% endif %}
+                    {% if key != 'uri' %}
+                        {{ value|e }}
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         {% endfor %}
