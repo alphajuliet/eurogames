@@ -96,10 +96,6 @@ body {
   align-content: right;
 }
 
-#viz {
-  margin: 0 20pt;
-}
-
 header {
   margin-bottom: 32pt;
 }
@@ -153,6 +149,7 @@ input, select {
 #viz {
   float: right;
   margin-right: 20pt;
+  width: 50%;
 }
 
 /* ==========================================================================
