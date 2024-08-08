@@ -30,8 +30,10 @@ def played():
 @app.route("/winner")
 def winner():
     db = Database("../../data/games.db")
-    games = db["winner"].rows
+    # games = db["winner"].rows
+    games = db.query("SELECT *, ROUND(100 * CAST(Andrew AS REAL) / Games, 1) AS AndrewRatio FROM winner")
     return render_template("winner.html", games=list(games))
+
 @app.route("/lastPlayed")
 def lastPlayed():
     db = Database("../../data/games.db")

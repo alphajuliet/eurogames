@@ -7,6 +7,7 @@
         <th>Andrew</th>
         <th>Trish</th>
         <th>Draw</th>
+        <th>Andrew ratio</th>
       </tr>
     </thead>
     <tbody>
@@ -17,6 +18,7 @@
         <td class="numeric">{{ game.Andrew|int() }}</td>
         <td class="numeric">{{ game.Trish|int() }}</td>
         <td class="numeric">{{ game.Draw|int() }}</td>
+        <td class="numeric">{{ game.AndrewRatio|float }}%</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -36,15 +38,23 @@
   const createPlot = function (gameData) {
     const chart = Plot.plot({
       width: 800,
-      marginLeft: 180,
+      marginLeft: 200,
+      paddingLeft: 20,
       x: {
         axis: "top", 
-        grid: true
+        ticks: 20
       },
       marks: [
         Plot.ruleX([0]),
         Plot.barX(gameData, {x: "Andrew", y: "name", fill: "#88aaff"}),
         Plot.barX(gameData, {x: d => -d["Trish"], y: "name", fill: "#ff88cc"}),
+        Plot.gridX({interval: 1, stroke: "white", strokeOpacity: 0.1 }),
+
+        // Counts
+        Plot.text(gameData, {x: 0.5, y: "name", text: (g) => g.Games, stroke: "#ffcc88", strokeWidth: 1 }),
+        Plot.text(gameData, {x: "Andrew", dx: 8, y: "name", text: (g) => g.Andrew == 0 ? "" : g.Andrew, stroke: "#cccccc", strokeWidth: 1 }),
+        Plot.text(gameData, {x: d => -d["Trish"], dx: -8, y: "name", text: (g) => g.Trish == 0 ? "" : g.Trish, stroke: "#cccccc", strokeWidth: 1 }),
+
         Plot.axisY({label: null }),
       ]
     });
