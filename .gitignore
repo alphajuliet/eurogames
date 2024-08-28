@@ -20,5 +20,7 @@ pom.xml.asc
 *.bal
 *.numbers
 *.db
+*.db-*
 *.csv
 .DS_Store
+.sesskey
