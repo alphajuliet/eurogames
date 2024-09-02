@@ -27,18 +27,24 @@ def played():
     results = db["played"].rows
     return render_template("results.html", results=results)
 
-@app.route("/winner")
-def winner():
-    db = Database("../../data/games.db")
-    # games = db["winner"].rows
-    games = db.query("SELECT *, ROUND(100 * CAST(Andrew AS REAL) / Games, 1) AS AndrewRatio FROM winner")
-    return render_template("winner.html", games=list(games))
-
 @app.route("/lastPlayed")
 def lastPlayed():
     db = Database("../../data/games.db")
     games = db["last_played"].rows
     return render_template("last_played.html", games=list(games))
+
+@app.route("/winner")
+def winner():
+    db = Database("../../data/games.db")
+    games = db.query("SELECT *, ROUND(100 * CAST(Andrew AS REAL) / Games, 1) AS AndrewRatio FROM winner")
+    return render_template("winner.html", games=list(games))
+
+# API response for just the winner totals
+@app.route("/totals")
+def totals():
+    db = Database("../../data/games.db")
+    sums = db.query("SELECT SUM(Games) as Games, SUM(Andrew) AS Andrew, SUM(Trish) AS Trish, Sum(Draw) AS Draw FROM winner")
+    return jsonify(list(sums))
 
 @app.route("/addResult", methods=["POST"])
 def addResult():
@@ -51,7 +57,7 @@ def addResult():
 
         db = Database("../../data/games.db")
         # Make sure table name and column names match your schema
-        db.execute("INSERT INTO log (date, id, winner, scores, comment) VALUES (?, ?, ?, ?, ?)", 
+        db.execute("INSERT INTO log (date, id, winner, scores, comment) VALUES (?, ?, ?, ?, ?)",
                    [date, game_id, winner, scores, comment])
         db.conn.commit()  # Commit the transaction to save changes to the database
 
