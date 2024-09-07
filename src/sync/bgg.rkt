@@ -10,7 +10,7 @@
          gregor
          json
          csv-writing
-         "gamesdb.rkt"
+         (prefix-in db: "gamesdb.rkt")
          (prefix-in h: "http.rkt"))
 
 (provide (all-defined-out))
@@ -99,8 +99,8 @@
 (module+ main
   (define args (current-command-line-arguments))
   (if (= 0 (vector-length args))
-      ;; Get game data for first three IDs
-      (~> (db-get-all-ids)
+      ;; Get game data for all IDs
+      (~> (db:db-get-all-ids)
           ; (take 10)
           (lookup-all-games)
           (hashes-to-csv))
