@@ -3,10 +3,9 @@
   <table id="table-last_played" class="sortable-theme-dark" data-sortable>
     <thead>
       <tr>
-        <th>Date</th>
-        <th>Days</th>
-        <th>Total played</th>
-        <th>Game</th>
+        {% for header in ['Date', 'Days', 'Total played', 'Game'] %}
+        <th scope="col">{{ header }}</th>
+        {% endfor %}
       </tr>
     </thead>
     <tbody>
@@ -15,13 +14,16 @@
         <td>{{ game.lastPlayed|e }}</td>
         <td class="numeric">{{ game.daysSince|int() }}</td>
         <td class="numeric">{{ game.games|e }}</td>
-        <td class="link"><a hx-get="/game/{{ game.id }}" hx-target="#content" hx-push-url="true">{{ game.name }}</a>
+        <td class="link">
+          <a hx-get="/game/{{ game.id }}" hx-target="#content" hx-push-url="true">{{ game.name|safe }}</a>
         </td>
       </tr>
       {% endfor %}
     </tbody>
     <script type="text/javascript">
-      document.getElementById("table-last_played").setAttribute("data-sortable-initialized", "false");
+      document
+        .getElementById("table-last_played")
+        .setAttribute("data-sortable-initialized", "false");
       Sortable.init();
     </script>
   </table>
@@ -35,10 +37,10 @@
   const createPlot = function (gameData) {
     const chart = Plot.plot({
       width: 800,
-      marginLeft: 180,
+      marginLeft: 220,
       x: {
         axis: "top",
-        grid: true
+        grid: true,
       },
       y: {},
       marks: [
@@ -47,18 +49,17 @@
           x: "daysSince",
           y: "name",
           sort: { y: "x" },
-          fill: "#8866dd"
+          fill: "#8866dd",
         }),
-        Plot.axisY({ label: null }),
+        Plot.axisY({ label: null })
       ],
-      // width: 400,
     });
     return chart;
-  }
+  };
 
   // Parse the games data from Flask and create the chart
-  const gamesDataElement = document.getElementById('gamesData');
-  const gamesData = gamesDataElement.getAttribute('data-arr');
+  const gamesDataElement = document.getElementById("gamesData");
+  const gamesData = gamesDataElement.getAttribute("data-arr");
   console.log(gamesData);
   const plot = createPlot(JSON.parse(gamesData));
   const div = document.querySelector("#myplot");

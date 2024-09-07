@@ -2,28 +2,39 @@
   <table id="table-winner" class="sortable-theme-dark" data-sortable>
     <thead>
       <tr>
-        <th>Name</th>
-        <th>Games</th>
-        <th>Andrew</th>
-        <th>Trish</th>
-        <th>Draw</th>
-        <th>Andrew ratio</th>
+        {% for header in ['Name', 'Games', 'Andrew', 'Trish', 'Draw', 'Andrew ratio'] %}
+        <th scope="col">{{ header }}</th>
+        {% endfor %}
       </tr>
     </thead>
     <tbody>
       {% for game in games %}
       <tr>
-        <td class="link"><a hx-get="/game/{{ game.id }}" hx-target="#content" hx-push-url="true">{{ game.name|e }}</a></td>
+        <td class="link">
+          <a hx-get="/game/{{ game.id }}" hx-target="#content" hx-push-url="true">
+            {{ game.name|e }}
+          </a>
+        </td>
         <td class="numeric">{{ game.Games|e }}</td>
         <td class="numeric">{{ game.Andrew|int() }}</td>
         <td class="numeric">{{ game.Trish|int() }}</td>
         <td class="numeric">{{ game.Draw|int() }}</td>
-        <td class="numeric">{{ game.AndrewRatio|float }}%</td>
+        <td class="numeric">{{ game.AndrewRatio|float }}</td>
       </tr>
       {% endfor %}
+      <tr>
+        <th>TOTALS</th>
+        <td class="numeric">{{ games|sum(attribute='Games') }}</td>
+        <td class="numeric">{{ games|sum(attribute='Andrew') }}</td>
+        <td class="numeric">{{ games|sum(attribute='Trish') }}</td>
+        <td class="numeric">{{ games|sum(attribute='Draw') }}</td>
+        <td></td>
+      </tr>
     </tbody>
     <script type="text/javascript">
-      document.getElementById("table-winner").setAttribute("data-sortable-initialized", "false");
+      document
+        .getElementById("table-winner")
+        .setAttribute("data-sortable-initialized", "false");
       Sortable.init();
     </script>
   </table>
@@ -34,36 +45,67 @@
 </div>
 <script type="module">
   import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
-
   const createPlot = function (gameData) {
     const chart = Plot.plot({
       width: 800,
-      marginLeft: 200,
+      marginLeft: 220,
       paddingLeft: 20,
       x: {
-        axis: "top", 
-        ticks: 20
+        axis: "top",
+        ticks: 20,
       },
       marks: [
         Plot.ruleX([0]),
-        Plot.barX(gameData, {x: "Andrew", y: "name", fill: "#88aaff"}),
-        Plot.barX(gameData, {x: d => -d["Trish"], y: "name", fill: "#ff88cc"}),
-        Plot.gridX({interval: 1, stroke: "white", strokeOpacity: 0.1 }),
+        Plot.barX(gameData, {
+          x: "Andrew",
+          y: "name",
+          fill: "#88aaff",
+        }),
+        Plot.barX(gameData, {
+          x: (d) => -d["Trish"],
+          y: "name",
+          fill: "#ff88cc",
+        }),
+        Plot.gridX({
+          interval: 1,
+          stroke: "white",
+          strokeOpacity: 0.1,
+        }),
 
         // Counts
-        Plot.text(gameData, {x: 0.5, y: "name", text: (g) => g.Games, stroke: "#ffcc88", strokeWidth: 1 }),
-        Plot.text(gameData, {x: "Andrew", dx: 8, y: "name", text: (g) => g.Andrew == 0 ? "" : g.Andrew, stroke: "#cccccc", strokeWidth: 1 }),
-        Plot.text(gameData, {x: d => -d["Trish"], dx: -8, y: "name", text: (g) => g.Trish == 0 ? "" : g.Trish, stroke: "#cccccc", strokeWidth: 1 }),
+        Plot.text(gameData, {
+          x: 0.5,
+          y: "name",
+          text: (g) => g.Games,
+          stroke: "#ffcc88",
+          strokeWidth: 1,
+        }),
+        Plot.text(gameData, {
+          x: "Andrew",
+          dx: 8,
+          y: "name",
+          text: (g) => (g.Andrew == 0 ? "" : g.Andrew),
+          stroke: "#cccccc",
+          strokeWidth: 1,
+        }),
+        Plot.text(gameData, {
+          x: (d) => -d["Trish"],
+          dx: -8,
+          y: "name",
+          text: (g) => (g.Trish == 0 ? "" : g.Trish),
+          stroke: "#cccccc",
+          strokeWidth: 1,
+        }),
 
-        Plot.axisY({label: null }),
-      ]
+        Plot.axisY({ label: null }),
+      ],
     });
     return chart;
-  }
+  };
 
   // Parse the games data from Flask and create the chart
-  const gamesDataElement = document.getElementById('gamesData');
-  const gamesData = gamesDataElement.getAttribute('data-arr');
+  const gamesDataElement = document.getElementById("gamesData");
+  const gamesData = gamesDataElement.getAttribute("data-arr");
   console.log(gamesData);
   const plot = createPlot(JSON.parse(gamesData));
   const div = document.querySelector("#myplot");
