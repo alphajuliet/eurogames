@@ -2,7 +2,12 @@
   <thead>
     <tr>
       {% for header in ['Name', 'ID', 'Status', 'Complexity', 'Ranking', 'Played', 'Last played'] %}
-        <th scope="col">{{ header }}</th>
+        <th scope="col">
+          {{ header }}
+          {% if header == 'Status' %}
+          <input type="text" class="filter-input" data-column-index="{{ loop.index0 }}" placeholder="Filter by status">
+          {% endif %}
+        </th>
       {% endfor %}
     </tr>
   </thead>
@@ -22,5 +27,23 @@
   <script type="text/javascript">
     document.getElementById("table-games").setAttribute("data-sortable-initialized", "false");
     Sortable.init();
+
+    // Add event listener for filter input
+    var filterInputs = document.querySelectorAll('.filter-input');
+    filterInputs.forEach(function(input) {
+      input.addEventListener('input', function() {
+        var columnIndex = this.dataset.columnIndex;
+        var filter = this.value.toLowerCase();
+        var rows = document.querySelectorAll('#table-games tbody tr');
+        rows.forEach(function(row) {
+          var cellText = row.cells[columnIndex].textContent.toLowerCase();
+          if (cellText.includes(filter)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+    });
   </script>
 </table>
