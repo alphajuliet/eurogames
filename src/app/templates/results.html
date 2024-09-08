@@ -22,8 +22,14 @@
   <table id="table-results" class="sortable-theme-dark" data-sortable>
     <thead>
       <tr>
-        {% for header in ['Date', 'ID', 'Name', 'Winner', 'Scores'] %}
-        <th scope="col">{{ header }}</th>
+        {% for header in ['Date', 'ID', 'Name', 'Winner', 'Scores', 'Comment'] %}
+        <!-- <th scope="col">{{ header }}</th> -->
+        <th scope="col">
+          {{ header }}
+          {% if header == 'Name' %}
+          <input type="text" class="filter-input" data-column-index="{{ loop.index0 }}" placeholder="Filter by name">
+          {% endif %}
+        </th>
         {% endfor %}
       </tr>
     </thead>
@@ -41,6 +47,24 @@
   <script type="text/javascript">
     document.getElementById("table-results").setAttribute("data-sortable-initialized", "false");
     Sortable.init();
+
+    // Add event listener for filter input
+    var filterInputs = document.querySelectorAll('.filter-input');
+    filterInputs.forEach(function(input) {
+      input.addEventListener('input', function() {
+        var columnIndex = this.dataset.columnIndex;
+        var filter = this.value.toLowerCase();
+        var rows = document.querySelectorAll('#table-results tbody tr');
+        rows.forEach(function(row) {
+          var cellText = row.cells[columnIndex].textContent.toLowerCase();
+          if (cellText.includes(filter)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+    });
   </script>
   </table>
 </section>
