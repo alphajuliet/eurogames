@@ -2,7 +2,7 @@
   <table id="table-winner" class="sortable-theme-dark" data-sortable>
     <thead>
       <tr>
-        {% for header in ['Name', 'Games', 'Andrew', 'Trish', 'Draw', 'Andrew ratio'] %}
+        {% for header in ['Name', 'Games', 'Andrew', 'Trish', 'Draw', 'Ratio'] %}
         <th scope="col">{{ header }}</th>
         {% endfor %}
       </tr>
@@ -97,7 +97,10 @@
           strokeWidth: 1,
         }),
 
-        Plot.axisY({ label: null }),
+        Plot.axisY({ 
+          fontSize: 12,
+          label: null 
+        }),
       ],
     });
     return chart;
