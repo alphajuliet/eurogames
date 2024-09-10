@@ -138,6 +138,14 @@ input, select {
   min-width: 100px;
 }
 
+#totals {
+  width: 200px;
+  background-color: #444;
+  border: 1px solid #888;
+  padding-left: 12pt;
+  margin: 12pt 0;
+}
+
 #result-entry {
   /* display: block; */
   margin: 6pt 0 20pt 0;

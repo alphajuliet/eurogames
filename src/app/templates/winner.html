@@ -22,15 +22,16 @@
         <td class="numeric">{{ game.AndrewRatio|float }}</td>
       </tr>
       {% endfor %}
-      <tr>
-        <th>TOTALS</th>
-        <td class="numeric">{{ games|sum(attribute='Games') }}</td>
-        <td class="numeric">{{ games|sum(attribute='Andrew') }}</td>
-        <td class="numeric">{{ games|sum(attribute='Trish') }}</td>
-        <td class="numeric">{{ games|sum(attribute='Draw') }}</td>
-        <td></td>
-      </tr>
     </tbody>
+    <div id="totals">
+      <p>Totals</p>
+      <ul>
+        <li>Games: {{ games|sum(attribute='Games') }}</li>
+        <li>Andrew: {{ games|sum(attribute='Andrew') }}</li>
+        <li>Trish: {{ games|sum(attribute='Trish') }}</li>
+        <li>Draws: {{ games|sum(attribute='Draw') }}</li>
+      </ul>
+    </div>
     <script type="text/javascript">
       document
         .getElementById("table-winner")
