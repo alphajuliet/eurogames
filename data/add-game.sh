@@ -13,6 +13,6 @@ sqlite-utils insert games.db bgg ${CSV} --csv
 
 echo "Adding game to table: notes"
 GAME_ID=`basename $1 .csv`
-sqlite-utils games.db "insert into notes (id, status, platform) values ($GAME_ID, 'Evaluating', 'BGA');"
+sqlite-utils games.db "insert into notes (id, status, platform) values ($GAME_ID, 'Inbox', 'BGA');"
 
 # The End
