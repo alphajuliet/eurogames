@@ -1,6 +1,11 @@
 #!/bin/bash
 # Return the names of all the games we are playing
 
+if [ -z "$VIRTUAL_ENV" ]; then
+  echo "Starting virtual environment"
+  source ../venv/bin/activate
+fi
+
 if [ -z "$1" ]; then
   STATUS="Playing"
 else

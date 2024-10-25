@@ -10,5 +10,10 @@ else
   scores=$4
 fi
 
+if [ -z "$VIRTUAL_ENV" ]; then
+  echo "Starting virtual environment"
+  source ../venv/bin/activate
+fi
+
 sqlite-utils games.db "INSERT INTO log ('date', 'id', 'winner', 'scores') VALUES
   ('$pdate', $id, '$winner', '$scores');"

@@ -8,6 +8,11 @@ else
   CSV=$1
 fi
 
+if [ -z "$VIRTUAL_ENV" ]; then
+  echo "Starting virtual environment"
+  source ../venv/bin/activate
+fi
+
 echo "Adding game to table: bgg"
 sqlite-utils insert games.db bgg ${CSV} --csv
 
