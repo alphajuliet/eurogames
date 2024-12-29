@@ -3,7 +3,7 @@
   <table id="table-last_played" class="sortable-theme-dark" data-sortable>
     <thead>
       <tr>
-        {% for header in ['Date', 'Days', 'Total played', 'Game'] %}
+        {% for header in ['Date', 'Days', 'Total played', 'ID', 'Game'] %}
         <th scope="col">{{ header }}</th>
         {% endfor %}
       </tr>
@@ -14,6 +14,7 @@
         <td>{{ game.lastPlayed|e }}</td>
         <td class="numeric">{{ game.daysSince|int() }}</td>
         <td class="numeric">{{ game.games|e }}</td>
+        <td class="numeric">{{ game.id|e }}</td>
         <td class="link">
           <a hx-get="/game/{{ game.id }}" hx-target="#content" hx-push-url="true">{{ game.name|safe }}</a>
         </td>

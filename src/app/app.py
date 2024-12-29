@@ -4,6 +4,7 @@ import os
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY')
+db_path = "../../data/games.db"
 
 @app.route("/")
 def main():
@@ -11,38 +12,38 @@ def main():
 
 @app.route("/games")
 def games():
-    db = Database("../../data/games.db")
+    db = Database(db_path)
     games = db["game_list2"].rows
     return render_template("games.html", games=games)
 
 @app.route("/game/<game_id>")
 def game(game_id):
-    db = Database("../../data/games.db")
+    db = Database(db_path)
     game = db.query("SELECT * FROM bgg LEFT JOIN notes ON bgg.id = notes.id WHERE bgg.id = :game", {"game": game_id})
     return render_template("game.html", game=iter(game))
 
 @app.route("/results")
 def played():
-    db = Database("../../data/games.db")
+    db = Database(db_path)
     results = db["played"].rows
     return render_template("results.html", results=results)
 
 @app.route("/lastPlayed")
 def lastPlayed():
-    db = Database("../../data/games.db")
+    db = Database(db_path)
     games = db["last_played"].rows
     return render_template("last_played.html", games=list(games))
 
 @app.route("/winner")
 def winner():
-    db = Database("../../data/games.db")
+    db = Database(db_path)
     games = db.query("SELECT *, ROUND(100 * CAST(Andrew AS REAL) / Games, 1) AS AndrewRatio FROM winner")
     return render_template("winner.html", games=list(games))
 
 # API response for just the winner totals
 @app.route("/totals")
 def totals():
-    db = Database("../../data/games.db")
+    db = Database(db_path)
     sums = db.query("SELECT SUM(Games) as Games, SUM(Andrew) AS Andrew, SUM(Trish) AS Trish, Sum(Draw) AS Draw FROM winner")
     return jsonify(list(sums))
 
