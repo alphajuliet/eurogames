@@ -12,6 +12,9 @@ if [ -z "$VIRTUAL_ENV" ]; then
   source ../venv/bin/activate
 fi
 
-sqlite-utils games.db "SELECT id, name, complexity, ranking FROM bgg WHERE name LIKE '%${game}%';"
+sqlite-utils games.db "\
+  SELECT * FROM bgg \
+  LEFT JOIN notes on bgg.id = notes.id \
+  WHERE name LIKE '%${game}%';" | jq ".[]"
 
 # The End

@@ -2,7 +2,7 @@
 # Insert one or more games into the BGG and notes table
 
 if [ -z "$1" ]; then
-  echo "Usage: add-game csv-file"
+  echo "Usage: $0 csv-file"
   exit 1
 else
   CSV=$1
