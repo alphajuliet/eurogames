@@ -1,5 +1,5 @@
 #!/bin/bash
-# Grab a game from BGG and add it to the database as a new game
+# Update existing game data in the bgg table with latest BGG information
 
 if [ -z "$1" ]; then
   echo "Usage: $0 game-id"
@@ -16,24 +16,27 @@ fi
 
 BGG="/Users/andrew/LocalProjects/games/eurogames/src/sync/bgg.rkt"
 CSV="${ID}.csv"
+
+# Attempt to fetch BGG data
 ${BGG} ${ID} > "${CSV}"
 
 if [ ! -s ${CSV} ]; then
-  echo "Error: no data returned from BGG"
-  exit 1
+    echo "Error: no data returned from BGG"
+    rm -f "${CSV}"
+    exit 1
 fi
 
 if [ -z "$VIRTUAL_ENV" ]; then
-  echo "Starting virtual environment"
-  source ../venv/bin/activate
+    echo "Starting virtual environment"
+    source ../venv/bin/activate
 fi
 
-echo "Adding game to table: bgg"
-sqlite-utils insert games.db bgg ${CSV} --csv
+echo "Updating game in table: bgg"
+sqlite-utils upsert games.db bgg ${CSV} --csv --pk=id
 
-echo "Adding game to table: notes"
-sqlite-utils games.db "insert into notes (id, status, platform) values (${ID}, 'Inbox', 'BGA');"
+# Clean up
+rm -f "${CSV}"
 
-rm ${CSV}
+echo "Update complete for game ID: ${ID}"
 
 # The End
