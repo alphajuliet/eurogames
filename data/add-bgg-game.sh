@@ -8,12 +8,6 @@ else
   ID=$1
 fi
 
-# Check if game exists in database first
-if ! sqlite-utils games.db "SELECT 1 FROM bgg WHERE id = ${ID} LIMIT 1;" | grep -q 1; then
-    echo "Error: Game ID ${ID} not found in database"
-    exit 1
-fi
-
 BGG="/Users/andrew/LocalProjects/games/eurogames/src/sync/bgg.rkt"
 CSV="${ID}.csv"
 ${BGG} ${ID} > "${CSV}"
