@@ -15,6 +15,12 @@ if [ -z "$VIRTUAL_ENV" ]; then
   source ../venv/bin/activate
 fi
 
+# Check if game exists in database first
+if ! sqlite-utils games.db "SELECT 1 FROM bgg WHERE id = ${ID} LIMIT 1;" | grep -q 1; then
+    echo "Error: Game ID ${ID} not found in database"
+    exit 1
+fi
+
 echo "Updating game id $ID: $FIELD -> $VALUE"
 sqlite-utils games.db "UPDATE notes SET $FIELD = \"$VALUE\" WHERE id = $ID;"
 
