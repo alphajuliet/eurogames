@@ -121,7 +121,7 @@ th, td {
 .link { color: lightskyblue;}
 
 td.numeric {
-  text-align: right;
+  text-align: right !important;
 }
 
 td a {
