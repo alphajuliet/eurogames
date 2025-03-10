@@ -17,16 +17,18 @@ if [ ! -s ${CSV} ]; then
   exit 1
 fi
 
-if [ -z "$VIRTUAL_ENV" ]; then
-  echo "Starting virtual environment"
-  source ../venv/bin/activate
-fi
+DB="../../data/games.db"
+
+# if [ -z "$VIRTUAL_ENV" ]; then
+#   echo "Starting virtual environment"
+#   source ../venv/bin/activate
+# fi
 
 echo "Adding game to table: bgg"
-sqlite-utils insert games.db bgg ${CSV} --csv
+sqlite-utils insert ${DB} bgg ${CSV} --csv
 
 echo "Adding game to table: notes"
-sqlite-utils games.db "insert into notes (id, status, platform) values (${ID}, 'Inbox', 'BGA');"
+sqlite-utils ${DB} "INSERT INTO notes (id, status, platform) VALUES (${ID}, 'Inbox', 'BGA');"
 
 rm ${CSV}
 

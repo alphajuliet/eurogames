@@ -8,13 +8,15 @@ else
   ID=$1
 fi
 
-if [ -z "$VIRTUAL_ENV" ]; then
-    echo "Starting virtual environment"
-    source ../venv/bin/activate
-fi
+# if [ -z "$VIRTUAL_ENV" ]; then
+#     echo "Starting virtual environment"
+#     source ../venv/bin/activate
+# fi
+
+DB="../../data/games.db"
 
 # Check if game exists in database first
-if ! sqlite-utils games.db "SELECT 1 FROM bgg WHERE id = ${ID} LIMIT 1;" | grep -q 1; then
+if ! sqlite-utils ${DB} "SELECT 1 FROM bgg WHERE id = ${ID} LIMIT 1;" | grep -q 1; then
     echo "Error: Game ID ${ID} not found in database"
     exit 1
 fi
@@ -32,7 +34,7 @@ if [ ! -s ${CSV} ]; then
 fi
 
 echo "Updating game in table: bgg"
-sqlite-utils upsert games.db bgg ${CSV} --csv --pk=id
+sqlite-utils upsert ${DB} bgg ${CSV} --csv --pk=id
 
 # Clean up
 rm -f "${CSV}"

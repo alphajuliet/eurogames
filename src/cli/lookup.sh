@@ -7,13 +7,14 @@ else
   game=$1
 fi
 
-if [ -z "$VIRTUAL_ENV" ]; then
-  echo "Starting virtual environment"
-  source ../venv/bin/activate
-fi
+# if [ -z "$VIRTUAL_ENV" ]; then
+#   echo "Starting virtual environment"
+#   source ../venv/bin/activate
+# fi
 
-sqlite-utils games.db "\
-  SELECT * FROM bgg \
+DB="../../data/games.db"
+sqlite-utils "${DB}" \
+  "SELECT * FROM bgg \
   LEFT JOIN notes on bgg.id = notes.id \
   WHERE name LIKE '%${game}%';" | jq ".[]"
 
