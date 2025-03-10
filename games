@@ -61,7 +61,7 @@ case "$command" in
         ./list-games.sh
         ;;
     "backup")
-        ./backup_db.sh
+        ./backup-db.sh
         ;;
     "run")
         ./run-app.sh
