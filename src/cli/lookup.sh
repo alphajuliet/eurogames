@@ -16,6 +16,6 @@ DB="../../data/games.db"
 sqlite-utils "${DB}" \
   "SELECT * FROM bgg \
   LEFT JOIN notes on bgg.id = notes.id \
-  WHERE name LIKE '%${game}%';" | jq ".[]"
+  WHERE name LIKE '%${game}%';" | jq "."
 
 # The End

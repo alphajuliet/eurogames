@@ -18,7 +18,7 @@ show_help() {
     echo "  get <id>"
     echo "  update <id>"
     echo "  update-notes <id> <field> <value>"
-    echo "  list"
+    echo "  list [<status>]"
     echo "  played [<limit>]"
     echo "  backup"
     echo "  run"
@@ -63,7 +63,7 @@ case "$command" in
         ./get-game-data.sh "$@"
         ;;
     "list")
-        ./list-games.sh
+        ./list-games.sh "$@"
         ;;
     "played")
         ./last-played.sh "$@"
