@@ -8,7 +8,7 @@ else
   ID=$1
 fi
 
-BGG="/Users/andrew/LocalProjects/games/eurogames/src/sync/bgg.rkt"
+BGG="../sync/bgg.rkt"
 CSV="${ID}.csv"
 ${BGG} ${ID} > "${CSV}"
 
