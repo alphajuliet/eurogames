@@ -20,11 +20,12 @@ show_help() {
     echo "  update-notes <id> <field> <value>"
     echo "  list [<status>]"
     echo "  played [<limit>]"
+    echo "  wins"
     echo "  backup"
     echo "  run"
     echo "  help"
     echo
-    echo "For help with specific commands, use: $0 <command> --help"
+    # echo "For help with specific commands, use: $0 <command> --help"
 }
 
 # Check if no arguments provided
@@ -38,9 +39,9 @@ fi
 #   source ./venv/bin/activate
 # fi
 
-# Parse command line arguments
+# Parse commands
 command="$1"
-shift  # Remove the first argument (the command)
+shift
 
 # Execute appropriate script based on command
 case "$command" in
@@ -67,6 +68,9 @@ case "$command" in
         ;;
     "played")
         ./last-played.sh "$@"
+        ;;
+    "wins")
+        ./winners.sh
         ;;
     "backup")
         ./backup-db.sh
