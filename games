@@ -68,16 +68,13 @@ case "$command" in
         ./list-games.sh "$@"
         ;;
     "played")
-        ./last-played.sh "$@"
+        ./last-played.sh
         ;;
     "wins")
         ./winners.sh
         ;;
     "backup")
         ./backup-db.sh
-        ;;
-    "last")
-        ./last-played.sh
         ;;
     "run")
         ./run-app.sh
