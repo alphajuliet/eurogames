@@ -20,6 +20,7 @@ show_help() {
     echo "  update-notes <id> <field> <value>"
     echo "  list [<status>]"
     echo "  played [<limit>]"
+    echo "  last"
     echo "  wins"
     echo "  backup"
     echo "  run"
@@ -74,6 +75,9 @@ case "$command" in
         ;;
     "backup")
         ./backup-db.sh
+        ;;
+    "last")
+        ./last-played.sh
         ;;
     "run")
         ./run-app.sh
