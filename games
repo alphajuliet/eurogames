@@ -16,6 +16,7 @@ show_help() {
     echo "  lookup <string>"
     echo "  all"
     echo "  get <id>"
+    echo "  result <id> <winner> <scores>"
     echo "  update <id>"
     echo "  update-notes <id> <field> <value>"
     echo "  list [<status>]"
@@ -64,11 +65,14 @@ case "$command" in
     "get")
         ./get-game-data.sh "$@"
         ;;
+    "result")
+        ./add-result.sh "$@"
+        ;;
     "list")
         ./list-games.sh "$@"
         ;;
     "played")
-        ./last-played.sh
+        ./last-played.sh "$@"
         ;;
     "wins")
         ./winners.sh
