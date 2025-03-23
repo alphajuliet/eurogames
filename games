@@ -15,7 +15,8 @@ show_help() {
     echo "  new <id>"
     echo "  lookup <string>"
     echo "  all"
-    echo "  get <id>"
+    echo "  info <id>"
+    echo "  bgg-get <id>"
     echo "  result <id> <winner> <scores>"
     echo "  update <id>"
     echo "  update-notes <id> <field> <value>"
@@ -62,7 +63,10 @@ case "$command" in
     "all")
         ./show-all.sh
         ;;
-    "get")
+    "info")
+        ./info.sh "$@"
+        ;;
+    "bgg-get")
         ./get-game-data.sh "$@"
         ;;
     "result")
