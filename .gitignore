@@ -23,6 +23,7 @@ pom.xml.asc
 *.numbers
 *.db
 *.db-*
+*.json
 *.csv
 .DS_Store
 .sesskey
