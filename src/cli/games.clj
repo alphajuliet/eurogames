@@ -2,7 +2,9 @@
   (:require [cheshire.core :as json]
             [clojure.string :as str]
             [clojure.tools.cli :refer [parse-opts]]
+            [clojure.data.csv :as csv]
             [cli.output :as output]
+            [clojure.java.shell :as shell]
             [babashka.fs :as fs]
             [pod.babashka.go-sqlite3 :as sql]))
 
@@ -40,10 +42,7 @@
   [status options]
   (try
     (let [db (get-db options)
-          q "SELECT notes.id, bgg.name FROM notes 
-             LEFT JOIN bgg ON notes.id = bgg.id 
-             WHERE status = ?
-             ORDER BY name ASC"]
+          q "SELECT id, name FROM game_list2 WHERE status = ?"]
       (print-output (sql/query db [q status]) :format (:format options)))
     (catch Exception e
       (println (.getMessage e)))))
@@ -62,9 +61,7 @@
   "View a game with a given ID"
   [id options]
   (let [db (get-db options)
-        q (str "SELECT * FROM bgg 
-                LEFT JOIN notes ON notes.id = bgg.id 
-                WHERE bgg.id = ?")]
+        q "SELECT * FROM game_list2 WHERE id = ?"]
     (print-output (sql/query db [q id]) :format (:format options))))
 
 (defn last-played
@@ -74,60 +71,55 @@
         q "SELECT * FROM last_played LIMIT ?"]
     (print-output (sql/query db [q n]) :format (:format options))))
 
-#_(defn view-release
-  "Show a release and the tracks"
-  [id options]
+(defn wins
+  "Show games won"
+  [options]
   (let [db (get-db options)
-        tracks (sql/query db ["SELECT title, track_number, tracks.id, ISRC, length FROM releases
-                              LEFT JOIN instances ON instances.release = releases.id
-                              LEFT JOIN tracks ON instances.id = tracks.id
-                              WHERE releases.id = ?
-                              ORDER BY track_number" id])
-        rel (sql/query db ["SELECT * FROM releases WHERE id = ?" id])
-        duration (->> tracks
-                      (map :length)
-                      (map mmss-to-seconds)
-                      (reduce +)
-                      seconds-to-mmss)]
-    (print-output (-> rel
-                      first
-                      (into {:tracks tracks :duration duration}))
-                  :format (:format options))))
+        q "SELECT * FROM winner"]
+    (print-output (sql/query db q) :format (:format options))))
 
-#_(defn add-track
-  "Create a new track with minimal info"
-  [title options]
+(defn insert-csv
+  "Insert CSV data into the database"
+  [id csv options]
   (try
     (let [db (get-db options)
-          info {:artist "Cyjet"
-                :type "Original"
-                :title title
-                :length "00:00"
-                :year (current-year)}
-          fields (->> info
-                      keys
-                      (map name)
-                      (str/join ", "))
-          values (->> info
-                      vals
-                      (map wrap-quote)
-                      (str/join ", "))]
-      (sql/execute! db ["INSERT INTO tracks (?) VALUES (?)" fields values])
+          [header row] (csv/read-csv csv)
+          values (map #(str "'" % "'") row)
+          q1 (str "INSERT INTO bgg (" (str/join ", " header) ") VALUES (" (str/join ", " values) ")")
+          q2 (str "INSERT INTO notes ( id, status, platform ) VALUES (" id ", 'Inbox', 'BGA')")] 
+      (println q1)
+      (println q2)
+      (sql/execute! db q1)
+      (sql/execute! db q2)
       (println "OK"))
     (catch Exception e
-      (println (.getMessage e)))))
+      (println "Error in insert-csv:" (.getMessage e)))))
 
-#_(defn update-track
-  "Update track info"
+(defn add-game
+  "Get game data from BGG"
+  [id options]
+  (try
+    (let [{:keys [exit out err]} (shell/sh "src/sync/bgg.rkt" id)]
+      (if (zero? exit)
+        (insert-csv id out options)
+        (println "Error:" exit ":" err)))
+    (catch Exception e
+      (println "Error in add-game:" (.getMessage e)))))
+
+(defn update-notes
+  "Update game notes"
   [id field value options]
   (try
     (let [db (get-db options)
-          q (str "UPDATE tracks SET " field " = ? WHERE id = ?")]
-      (sql/execute! db [q value id])
-      (println "OK"))
+          qcheck "SELECT 1 from bgg WHERE id = ? LIMIT 1"
+          q (str "UPDATE notes SET " field " = ? WHERE id = ?")]
+      (if (seq (sql/query db [qcheck id]))
+        (do
+          (sql/execute! db [q value id])
+          (println "OK"))
+        (println "Game not found")))
     (catch Exception e
       (println (.getMessage e)))))
-
 
 (defn query
   "Query the db with SQL. No input checking is done."
@@ -176,6 +168,7 @@ Commands:
     lookup <name>                        Lookup games by name
     id <id>                              Show game info
     played [<limit>]                     Show last n games played
+    wins                                 Show games won
 
     new <id>                             Add a new game
     update-notes <id> <field> <value>    Update game notes
@@ -213,6 +206,9 @@ Commands:
                 "lookup" (lookup (first cmd-args) options)
                 "id" (view-game (first cmd-args) options)
                 "played" (last-played (or (first cmd-args) 100) options)
+                "wins" (wins options)
+                "update-notes" (update-notes (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
+                "add-game" (add-game (first cmd-args) options)
                 "query" (query (str/join " " cmd-args) options)
                 "export-data" (export-data (first cmd-args) options)
                 "backup" (backup {:db-file (:db options) :backup-dir (:backup-dir options)})
