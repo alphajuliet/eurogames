@@ -5,6 +5,8 @@
 /src/app/__pycache__
 /compiled
 /.lsp
+.calva
+.clj-kondo
 venv/
 profiles.clj
 pom.xml
