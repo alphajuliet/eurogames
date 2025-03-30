@@ -17,7 +17,7 @@ fi
 #   source ../venv/bin/activate
 # fi
 
-DB="../../data/games.db"
+DB="./data/games.db"
 
 sqlite-utils $DB "INSERT INTO log ('date', 'id', 'winner', 'scores') VALUES
   ('$pdate', $id, '$winner', '$scores');"
