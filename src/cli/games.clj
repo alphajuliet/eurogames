@@ -64,6 +64,13 @@
         q "SELECT * FROM game_list2 WHERE id = ?"]
     (print-output (sql/query db [q id]) :format (:format options))))
 
+(defn history
+  "Show the history of a game"
+  [id options]
+  (let [db (get-db options)
+        q "SELECT * FROM played WHERE id = ?"]
+    (print-output (sql/query db [q id]) :format (:format options))))
+
 (defn last-played
   "Show when the games were last played"
   [n options]
@@ -174,6 +181,7 @@ Commands:
     list [<status>]                      List games with a given status
     lookup <name>                        Lookup games by name
     id <id>                              Show game info
+    history <id>                         Show game history
     played [<limit>]                     Show when games last played
     results [<limit>]                    Show the results of the latest games
     wins                                 Show games won
@@ -213,6 +221,7 @@ Commands:
                 "list" (list-games (or (first cmd-args) "Playing") options)
                 "lookup" (lookup (first cmd-args) options)
                 "id" (view-game (first cmd-args) options)
+                "history" (history (first cmd-args) options)
                 "played" (last-played (or (first cmd-args) 100) options)
                 "results" (results (or (first cmd-args) 15) options)
                 "wins" (wins options)
