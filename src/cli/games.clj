@@ -65,10 +65,17 @@
     (print-output (sql/query db [q id]) :format (:format options))))
 
 (defn last-played
-  "Show last n games played"
+  "Show when the games were last played"
   [n options]
   (let [db (get-db options)
         q "SELECT * FROM last_played LIMIT ?"]
+    (print-output (sql/query db [q n]) :format (:format options))))
+
+(defn results
+  "Show the last n results"
+  [n options]
+  (let [db (get-db options)
+        q "SELECT * FROM played LIMIT ?"]
     (print-output (sql/query db [q n]) :format (:format options))))
 
 (defn wins
@@ -167,7 +174,8 @@ Commands:
     list [<status>]                      List games with a given status
     lookup <name>                        Lookup games by name
     id <id>                              Show game info
-    played [<limit>]                     Show last n games played
+    played [<limit>]                     Show when games last played
+    results [<limit>]                    Show the results of the latest games
     wins                                 Show games won
 
     new <id>                             Add a new game
@@ -206,6 +214,7 @@ Commands:
                 "lookup" (lookup (first cmd-args) options)
                 "id" (view-game (first cmd-args) options)
                 "played" (last-played (or (first cmd-args) 100) options)
+                "results" (results (or (first cmd-args) 15) options)
                 "wins" (wins options)
                 "update-notes" (update-notes (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
                 "add-game" (add-game (first cmd-args) options)
