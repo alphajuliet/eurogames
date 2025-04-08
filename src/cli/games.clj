@@ -8,7 +8,7 @@
             [babashka.fs :as fs]
             [pod.babashka.go-sqlite3 :as sql]))
 
-(def cli-version "0.1.0")
+(def cli-version "0.1.1")
 
 (def cli-options
   [["-h" "--help" "Show help information"]
@@ -126,10 +126,26 @@
   (try
     (let [db (get-db options)
           qcheck "SELECT 1 from bgg WHERE id = ? LIMIT 1"
-          q (str "UPDATE notes SET " field " = ? WHERE id = ?")]
+          q ["UPDATE notes SET " field " = ? WHERE id = ?"]]
       (if (seq (sql/query db [qcheck id]))
         (do
           (sql/execute! db [q value id])
+          (println "OK"))
+        (println "Game not found")))
+    (catch Exception e
+      (println (.getMessage e)))))
+
+(defn add-result
+  "Add a game result"
+  [id winner score options]
+  (try
+    (let [db (get-db options)
+          date (current-date)
+          qcheck "SELECT 1 from bgg WHERE id = ? LIMIT 1"
+          q "INSERT INTO log (date, id, winner, scores) VALUES (?, ?, ?, ?)"]
+      (if (seq (sql/query db [qcheck id]))
+        (do
+          (sql/execute! db [q date id winner score])
           (println "OK"))
         (println "Game not found")))
     (catch Exception e
@@ -182,12 +198,13 @@ Commands:
     lookup <name>                        Lookup games by name
     id <id>                              Show game info
     history <id>                         Show game history
-    played [<limit>]                     Show when games last played
+    last [<limit>]                       Show when games last played
     results [<limit>]                    Show the results of the latest games
     wins                                 Show games won
 
     new <id>                             Add a new game
     update-notes <id> <field> <value>    Update game notes
+    add-result <id> <winner> <score>     Add a game result
 
     query <sql>                          Run SQL query
     export-data <filename>               Export data to file
@@ -222,11 +239,12 @@ Commands:
                 "lookup" (lookup (first cmd-args) options)
                 "id" (view-game (first cmd-args) options)
                 "history" (history (first cmd-args) options)
-                "played" (last-played (or (first cmd-args) 100) options)
+                "last" (last-played (or (first cmd-args) 100) options)
                 "results" (results (or (first cmd-args) 15) options)
                 "wins" (wins options)
                 "update-notes" (update-notes (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
                 "add-game" (add-game (first cmd-args) options)
+                "add-result" (add-result (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
                 "query" (query (str/join " " cmd-args) options)
                 "export-data" (export-data (first cmd-args) options)
                 "backup" (backup {:db-file (:db options) :backup-dir (:backup-dir options)})
