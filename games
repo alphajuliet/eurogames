@@ -4,7 +4,7 @@
 # Description: Central interface to manage games database operations using subcommands
 
 # Set script directory as working directory
-SCRIPT_DIR="./src/cli"
+SCRIPT_DIR="./src/scripts"
 cd "$SCRIPT_DIR"
 
 # Function to display help
