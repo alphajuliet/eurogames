@@ -7,14 +7,12 @@
 /.lsp
 .calva
 .clj-kondo
-venv/
 profiles.clj
 pom.xml
 pom.xml.asc
 *.jar
 *.pyc
 *.class
-/.lein-*
 /.nrepl-port
 .hgignore
 .hg/
@@ -27,3 +25,4 @@ pom.xml.asc
 *.csv
 .DS_Store
 .sesskey
+uv.lock
