@@ -109,6 +109,20 @@
     (catch Exception e
       (println "Error in insert-csv:" (.getMessage e)))))
 
+(defn update-csv
+  "Update the bgg table with new CSV data"
+  [id csv options]
+  (try
+    (let [db (get-db options)
+          [header rows] (csv/read-csv csv)
+          assignments (->> (map (fn [h v] (str h " = '" v "'")) header rows)
+                           (str/join ", "))
+          q1 (str "UPDATE bgg SET " assignments " WHERE id = " id)]
+      (sql/execute! db q1)
+      (println "OK"))
+    (catch Exception e
+      (println "Error in update-csv:" (.getMessage e)))))
+
 (defn add-game
   "Get game data from BGG"
   [id options]
@@ -119,6 +133,22 @@
         (println "Error:" exit ":" err)))
     (catch Exception e
       (println "Error in add-game:" (.getMessage e)))))
+
+(defn update-game-data
+  "Update game data with latest data from BGG. Check first that the games exists in the db"
+  [id options]
+  (try
+    (let [db (get-db options)
+          qcheck "SELECT 1 from bgg WHERE id = ? LIMIT 1"]
+      (if (seq (sql/query db [qcheck id]))
+        (let [{:keys [exit out err]} (shell/sh "src/sync/bgg.rkt" id)]
+          (if (zero? exit)
+            (update-csv id out options)
+            (println "Error:" exit ":" err))) 
+        ;; else
+        (println "Game not found in database")))
+    (catch Exception e
+      (println "Error in update-game-data:" (.getMessage e)))))
 
 (defn update-notes
   "Update game notes"
@@ -203,6 +233,7 @@ Commands:
     wins                                 Show games won
 
     new <id>                             Add a new game
+    update <id>                          Update game with latest data from BGG
     update-notes <id> <field> <value>    Update game notes
     add-result <id> <winner> <score>     Add a game result
 
@@ -242,6 +273,7 @@ Commands:
                 "last" (last-played (or (first cmd-args) 100) options)
                 "results" (results (or (first cmd-args) 15) options)
                 "wins" (wins options)
+                "update" (update-game-data (first cmd-args) options)
                 "update-notes" (update-notes (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
                 "add-game" (add-game (first cmd-args) options)
                 "add-result" (add-result (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
