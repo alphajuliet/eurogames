@@ -8,7 +8,7 @@
             [babashka.fs :as fs]
             [pod.babashka.go-sqlite3 :as sql]))
 
-(def cli-version "0.1.1")
+(def cli-version "0.1.2")
 
 (def cli-options
   [["-h" "--help" "Show help information"]
