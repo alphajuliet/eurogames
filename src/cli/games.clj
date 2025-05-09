@@ -13,8 +13,8 @@
 (def cli-options
   [["-h" "--help" "Show help information"]
    ["-v" "--version" "Show version information"]
-   ["-f" "--format FORMAT" "Output format: json (default), edn, plain, or table"
-    :default "json"
+   ["-f" "--format FORMAT" "Output format: table (default), json, edn, or plain"
+    :default "table"
     :validate [#(contains? #{"json" "edn" "plain" "table"} %) "Must be one of: json, edn, plain, table"]]
    ["-d" "--db PATH" "Database file path"
     :default "data/games.db"]
@@ -53,7 +53,7 @@
   (try
     (let [db (get-db options)
           q "SELECT * FROM bgg WHERE name LIKE ?"]
-      (print-output (sql/query db [q (str "%" title "%")] :format (:format options))))
+      (print-output (sql/query db [q (str "%" title "%")]) :format "json"))
     (catch Exception e
       (println (.getMessage e)))))
 

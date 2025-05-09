@@ -65,5 +65,5 @@
               (coll? data) (str/join "\n" (map #(str/join " | " (map (fn [[_ v]] (str v)) %)) data))
               :else (str data))
     "table" (format-as-table data)
-    ;; default to json
-    (json/generate-string data {:pretty true})))
+    ;; default to table
+    (format-as-table data)))
