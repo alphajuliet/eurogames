@@ -92,6 +92,18 @@
         q "SELECT * FROM winner"]
     (print-output (sql/query db q) :format (:format options))))
 
+(defn win-totals
+  "Show total wins per player across all games"
+  [options]
+  (let [db (get-db options)
+        q "SELECT 'Andrew' AS player, SUM(Andrew) AS total_wins FROM winner
+           UNION
+           SELECT 'Trish' AS player, SUM(Trish) AS total_wins FROM winner
+           UNION
+           SELECT 'Draw' AS player, SUM(Draw) AS total_wins FROM winner
+           ORDER BY total_wins DESC"]
+    (print-output (sql/query db q) :format (:format options))))
+
 (defn insert-csv
   "Insert CSV data into the database"
   [id csv options]
@@ -231,6 +243,7 @@ Commands:
     last [<limit>]                       Show when games last played
     results [<limit>]                    Show the results of the latest games
     wins                                 Show games won
+    win-totals                           Show total wins per player across all games
 
     new <id>                             Add a new game
     update <id>                          Update game with latest data from BGG
@@ -273,6 +286,7 @@ Commands:
                 "last" (last-played (or (first cmd-args) 100) options)
                 "results" (results (or (first cmd-args) 15) options)
                 "wins" (wins options)
+                "win-totals" (win-totals options)
                 "update" (update-game-data (first cmd-args) options)
                 "update-notes" (update-notes (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
                 "add-game" (add-game (first cmd-args) options)
