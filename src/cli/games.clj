@@ -16,6 +16,8 @@
    ["-f" "--format FORMAT" "Output format: table (default), json, edn, or plain"
     :default "table"
     :validate [#(contains? #{"json" "edn" "plain" "table"} %) "Must be one of: json, edn, plain, table"]]
+   ["-s" "--sort-by COLUMN" "Sort output by the specified column (for table format)"
+    :default nil]
    ["-d" "--db PATH" "Database file path"
     :default "data/games.db"]
    ["-b" "--backup-dir PATH" "Backup directory path"
@@ -31,8 +33,8 @@
 ;; ------------------------------------------------------
 (defn print-output
   "Print data according to the specified format"
-  [data & {:keys [format] :or {format "json"}}]
-  (println (output/format-output data format)))
+  [data & {:keys [format sort-by] :or {format "json"}}]
+  (println (output/format-output data format :sort-by sort-by)))
 
 (defn get-db [options]
   (or (:db options) "data/games.db"))
@@ -43,7 +45,9 @@
   (try
     (let [db (get-db options)
           q "SELECT id, name FROM game_list2 WHERE status = ?"]
-      (print-output (sql/query db [q status]) :format (:format options)))
+      (print-output (sql/query db [q status]) 
+                   :format (:format options)
+                   :sort-by (:sort-by options)))
     (catch Exception e
       (println (.getMessage e)))))
 
@@ -53,7 +57,9 @@
   (try
     (let [db (get-db options)
           q "SELECT * FROM bgg WHERE name LIKE ?"]
-      (print-output (sql/query db [q (str "%" title "%")]) :format "json"))
+      (print-output (sql/query db [q (str "%" title "%")]) 
+                   :format (:format options)
+                   :sort-by (:sort-by options)))
     (catch Exception e
       (println (.getMessage e)))))
 
@@ -62,35 +68,45 @@
   [id options]
   (let [db (get-db options)
         q "SELECT * FROM game_list2 WHERE id = ?"]
-    (print-output (sql/query db [q id]) :format (:format options))))
+    (print-output (sql/query db [q id]) 
+                 :format (:format options)
+                 :sort-by (:sort-by options))))
 
 (defn history
-  "Show the history of a game"
+  "Show game history for a specific game"
   [id options]
   (let [db (get-db options)
-        q "SELECT * FROM played WHERE id = ?"]
-    (print-output (sql/query db [q id]) :format (:format options))))
+        q "SELECT * FROM played WHERE id = ? ORDER BY date DESC"]
+    (print-output (sql/query db [q id]) 
+                 :format (:format options)
+                 :sort-by (:sort-by options))))
 
 (defn last-played
   "Show when the games were last played"
   [n options]
   (let [db (get-db options)
         q "SELECT * FROM last_played LIMIT ?"]
-    (print-output (sql/query db [q n]) :format (:format options))))
+    (print-output (sql/query db [q n]) 
+                 :format (:format options)
+                 :sort-by (:sort-by options))))
 
 (defn results
   "Show the last n results"
   [n options]
   (let [db (get-db options)
         q "SELECT * FROM played LIMIT ?"]
-    (print-output (sql/query db [q n]) :format (:format options))))
+    (print-output (sql/query db [q n]) 
+                 :format (:format options)
+                 :sort-by (:sort-by options))))
 
 (defn wins
   "Show games won"
   [options]
   (let [db (get-db options)
         q "SELECT * FROM winner"]
-    (print-output (sql/query db q) :format (:format options))))
+    (print-output (sql/query db q) 
+                 :format (:format options)
+                 :sort-by (:sort-by options))))
 
 (defn win-totals
   "Show total wins per player across all games"
@@ -102,7 +118,9 @@
            UNION
            SELECT 'Draw' AS player, SUM(Draw) AS total_wins FROM winner
            ORDER BY total_wins DESC"]
-    (print-output (sql/query db q) :format (:format options))))
+    (print-output (sql/query db q) 
+                 :format (:format options)
+                 :sort-by (:sort-by options))))
 
 (defn insert-csv
   "Insert CSV data into the database"
@@ -199,7 +217,9 @@
   (let [db (get-db options)]
     (as-> query-str <>
       (sql/query db <>)
-      (print-output <> :format (:format options)))))
+      (print-output <> 
+                   :format (:format options)
+                   :sort-by (:sort-by options)))))
 
 (defn export-data [filename options]
   (let [db (get-db options)

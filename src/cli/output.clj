@@ -54,16 +54,25 @@
       (coll? data) (str/join "\n" (map str data))
       :else (str data))))
 
+(defn sort-data-by-column
+  "Sort data by the specified column"
+  [data sort-by-column]
+  (if (and sort-by-column (seq data) (map? (first data)))
+    (let [sort-key (keyword sort-by-column)]
+      (clojure.core/sort-by #(get % sort-key) data))
+    data))
+
 (defn format-output
   "Format data according to the specified format"
-  [data format]
-  (case format
-    "json" (json/generate-string data {:pretty true})
-    "edn" (pr-str data)
-    "plain" (cond
-              (map? data) (str/join "\n" (map #(str (name (key %)) ": " (val %)) data))
-              (coll? data) (str/join "\n" (map #(str/join " | " (map (fn [[_ v]] (str v)) %)) data))
-              :else (str data))
-    "table" (format-as-table data)
-    ;; default to table
-    (format-as-table data)))
+  [data format & {:keys [sort-by]}]
+  (let [sorted-data (sort-data-by-column data sort-by)]
+    (case format
+      "json" (json/generate-string sorted-data {:pretty true})
+      "edn" (pr-str sorted-data)
+      "plain" (cond
+                (map? sorted-data) (str/join "\n" (map #(str (name (key %)) ": " (val %)) sorted-data))
+                (coll? sorted-data) (str/join "\n" (map #(str/join " | " (map (fn [[_ v]] (str v)) %)) sorted-data))
+                :else (str sorted-data))
+      "table" (format-as-table sorted-data)
+      ;; default to table
+      (format-as-table sorted-data))))
