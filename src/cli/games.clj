@@ -265,7 +265,7 @@ Commands:
     wins                                 Show games won
     win-totals                           Show total wins per player across all games
 
-    new <id>                             Add a new game
+    add-game <id>                        Add a new game
     update <id>                          Update game with latest data from BGG
     update-notes <id> <field> <value>    Update game notes
     add-result <id> <winner> <score>     Add a game result
