@@ -186,7 +186,7 @@
     (catch Exception e
       (println (.getMessage e)))))
 
-(defn query
+(defn adhoc-query
   "Query the db with SQL. No input checking is done."
   [query-str options]
   (let [db (get-db options)]
@@ -286,7 +286,7 @@ Commands:
                 "update-notes" (update-notes (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
                 "add-game" (add-game (first cmd-args) options)
                 "add-result" (add-result (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
-                "query" (query (str/join " " cmd-args) options)
+                "query" (adhoc-query (str/join " " cmd-args) options)
                 "export-data" (export-data (first cmd-args) options)
                 "backup" (backup {:db-file (:db options) :backup-dir (:backup-dir options)})
                 ;; else
