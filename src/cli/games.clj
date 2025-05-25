@@ -36,11 +36,14 @@
   [data & {:keys [format sort-by] :or {format "json"}}]
   (println (output/format-output data format :sort-by sort-by)))
 
-(defn get-db [options]
+(defn get-db
+  "Get the database file path"
+  [options]
   (or (:db options) "data/games.db"))
 
-(defn query [q options]
+(defn query
   "Query the db with SQL. No input checking is done."
+  [q options]
   (try
     (let [db (get-db options)]
       (print-output (sql/query db q)
