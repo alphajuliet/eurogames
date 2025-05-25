@@ -39,88 +39,60 @@
 (defn get-db [options]
   (or (:db options) "data/games.db"))
 
+(defn query [q options]
+  "Query the db with SQL. No input checking is done."
+  (try
+    (let [db (get-db options)]
+      (print-output (sql/query db q)
+                    :format (:format options)
+                    :sort-by (:sort-by options)))
+    (catch Exception e
+      (println (.getMessage e)))))
+
 (defn list-games
   "List all games"
   [status options]
-  (try
-    (let [db (get-db options)
-          q "SELECT id, name FROM game_list2 WHERE status = ?"]
-      (print-output (sql/query db [q status]) 
-                   :format (:format options)
-                   :sort-by (:sort-by options)))
-    (catch Exception e
-      (println (.getMessage e)))))
+  (query ["SELECT id, name FROM game_list2 WHERE status = ?" status] options))
 
 (defn lookup
   "Lookup games that match on title"
   [title options]
-  (try
-    (let [db (get-db options)
-          q "SELECT * FROM bgg WHERE name LIKE ?"]
-      (print-output (sql/query db [q (str "%" title "%")]) 
-                   :format (:format options)
-                   :sort-by (:sort-by options)))
-    (catch Exception e
-      (println (.getMessage e)))))
+  (query ["SELECT * FROM bgg WHERE name LIKE ?" (str "%" title "%")] options))
 
 (defn view-game
   "View a game with a given ID"
   [id options]
-  (let [db (get-db options)
-        q "SELECT * FROM game_list2 WHERE id = ?"]
-    (print-output (sql/query db [q id]) 
-                 :format "json" ;(:format options)
-                 :sort-by (:sort-by options))))
+  (query ["SELECT * FROM game_list2 WHERE id = ?" id] (assoc options :format "json")))
 
 (defn history
   "Show game history for a specific game"
   [id options]
-  (let [db (get-db options)
-        q "SELECT * FROM played WHERE id = ? ORDER BY date DESC"]
-    (print-output (sql/query db [q id]) 
-                 :format (:format options)
-                 :sort-by (:sort-by options))))
+  (query ["SELECT * FROM played WHERE id = ? ORDER BY date DESC" id] options))
 
 (defn last-played
   "Show when the games were last played"
   [n options]
-  (let [db (get-db options)
-        q "SELECT * FROM last_played LIMIT ?"]
-    (print-output (sql/query db [q n]) 
-                 :format (:format options)
-                 :sort-by (:sort-by options))))
+  (query ["SELECT * FROM last_played LIMIT ?" n] options))
 
 (defn results
   "Show the last n results"
   [n options]
-  (let [db (get-db options)
-        q "SELECT * FROM played LIMIT ?"]
-    (print-output (sql/query db [q n]) 
-                 :format (:format options)
-                 :sort-by (:sort-by options))))
+  (query ["SELECT * FROM played LIMIT ?" n] options))
 
 (defn wins
   "Show games won"
   [options]
-  (let [db (get-db options)
-        q "SELECT * FROM winner"]
-    (print-output (sql/query db q) 
-                 :format (:format options)
-                 :sort-by (:sort-by options))))
+  (query "SELECT * FROM winner" options))
 
 (defn win-totals
   "Show total wins per player across all games"
   [options]
-  (let [db (get-db options)
-        q "SELECT 'Andrew' AS player, SUM(Andrew) AS total_wins FROM winner
+  (query "SELECT 'Andrew' AS player, SUM(Andrew) AS total_wins FROM winner
            UNION
            SELECT 'Trish' AS player, SUM(Trish) AS total_wins FROM winner
            UNION
            SELECT 'Draw' AS player, SUM(Draw) AS total_wins FROM winner
-           ORDER BY total_wins DESC"]
-    (print-output (sql/query db q) 
-                 :format (:format options)
-                 :sort-by (:sort-by options))))
+           ORDER BY total_wins DESC" options))
 
 (defn insert-csv
   "Insert CSV data into the database"
