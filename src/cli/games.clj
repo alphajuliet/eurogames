@@ -69,7 +69,7 @@
   (let [db (get-db options)
         q "SELECT * FROM game_list2 WHERE id = ?"]
     (print-output (sql/query db [q id]) 
-                 :format (:format options)
+                 :format "json" ;(:format options)
                  :sort-by (:sort-by options))))
 
 (defn history
