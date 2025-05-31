@@ -155,11 +155,11 @@
   [id field value options]
   (try
     (let [db (get-db options)
-          qcheck "SELECT 1 from bgg WHERE id = ? LIMIT 1"
-          q ["UPDATE notes SET " field " = ? WHERE id = ?"]]
-      (if (seq (sql/query db [qcheck id]))
+          qcheck [(str "SELECT " field " from notes WHERE id = ? LIMIT 1") id]
+          q [(str "UPDATE notes SET " field " = ? WHERE id = ?") value id]]
+      (if (seq (sql/query db qcheck))
         (do
-          (sql/execute! db [q value id])
+          (sql/execute! db q)
           (println "OK"))
         (println "Game not found")))
     (catch Exception e
