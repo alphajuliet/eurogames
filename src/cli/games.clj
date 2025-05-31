@@ -90,12 +90,7 @@
 (defn win-totals
   "Show total wins per player across all games"
   [options]
-  (query "SELECT 'Andrew' AS player, SUM(Andrew) AS total_wins FROM winner
-           UNION
-           SELECT 'Trish' AS player, SUM(Trish) AS total_wins FROM winner
-           UNION
-           SELECT 'Draw' AS player, SUM(Draw) AS total_wins FROM winner
-           ORDER BY total_wins DESC" options))
+  (query "SELECT * from winner" options)
 
 (defn insert-csv
   "Insert CSV data into the database"
