@@ -90,7 +90,7 @@
 (defn win-totals
   "Show total wins per player across all games"
   [options]
-  (query "SELECT * from winner" options)
+  (query "SELECT * from winner" options))
 
 (defn insert-csv
   "Insert CSV data into the database"
