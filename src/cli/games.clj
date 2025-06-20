@@ -77,20 +77,15 @@
   [n options]
   (query ["SELECT * FROM last_played LIMIT ?" n] options))
 
-(defn results
-  "Show the last n results"
+(defn recent
+  "Show recent games played"
   [n options]
   (query ["SELECT * FROM played LIMIT ?" n] options))
 
-(defn wins
-  "Show games won"
+(defn stats
+  "Show win statistics and totals"
   [options]
   (query "SELECT * FROM winner" options))
-
-(defn win-totals
-  "Show total wins per player across all games"
-  [options]
-  (query "SELECT * from winner" options))
 
 (defn insert-csv
   "Insert CSV data into the database"
@@ -226,22 +221,25 @@ Commands:
     help                                 Show this help
     version                              Show version information
      
+  Game Management:
     list [<status>]                      List games with a given status
-    lookup <name>                        Lookup games by name
-    id <id>                              Show game info
-    history <id>                         Show game history
-    last [<limit>]                       Show when games last played
-    results [<limit>]                    Show the results of the latest games
-    wins                                 Show games won
-    win-totals                           Show total wins per player across all games
+    search <name>                        Search games by name
+    show <id>                            Show detailed game info
+    add <bgg-id>                         Add a new game from BGG
+    sync <id>                            Update game data from BGG
 
-    add-game <id>                        Add a new game
-    update <id>                          Update game with latest data from BGG
-    update-notes <id> <field> <value>    Update game notes
-    add-result <id> <winner> <score>     Add a game result
+  Game Play Tracking:
+    play <id> <winner> [<score>]         Record a game result
+    history <id>                         Show play history for a game
+    recent [<limit>]                     Show recent games played
 
-    query <sql>                          Run SQL query
-    export-data <filename>               Export data to file
+  Statistics & Analysis:
+    stats                                Show win statistics and totals
+    notes <id> <field> <value>           Update game notes
+
+  Utilities:
+    query <sql>                          Run custom SQL query
+    export <filename>                    Export data to file
     backup                               Create a backup of the database"))
 
 (defn help
@@ -270,18 +268,29 @@ Commands:
                 "help" (help {:summary summary})
                 "version" (version)
                 "list" (list-games (or (first cmd-args) "Playing") options)
+                "search" (lookup (first cmd-args) options)
+                "show" (view-game (first cmd-args) options)
+                "history" (history (first cmd-args) options)
+                "recent" (recent (or (first cmd-args) 15) options)
+                "stats" (stats options)
+                "sync" (update-game-data (first cmd-args) options)
+                "notes" (update-notes (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
+                "add" (add-game (first cmd-args) options)
+                "play" (add-result (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
+                "query" (adhoc-query (str/join " " cmd-args) options)
+                "export" (export-data (first cmd-args) options)
+                
+                ;; Legacy command aliases for backward compatibility
                 "lookup" (lookup (first cmd-args) options)
                 "id" (view-game (first cmd-args) options)
-                "history" (history (first cmd-args) options)
                 "last" (last-played (or (first cmd-args) 100) options)
-                "results" (results (or (first cmd-args) 15) options)
-                "wins" (wins options)
-                "win-totals" (win-totals options)
+                "results" (recent (or (first cmd-args) 15) options)
+                "wins" (stats options)
+                "win-totals" (stats options)
                 "update" (update-game-data (first cmd-args) options)
                 "update-notes" (update-notes (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
                 "add-game" (add-game (first cmd-args) options)
                 "add-result" (add-result (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
-                "query" (adhoc-query (str/join " " cmd-args) options)
                 "export-data" (export-data (first cmd-args) options)
                 "backup" (backup {:db-file (:db options) :backup-dir (:backup-dir options)})
                 ;; else

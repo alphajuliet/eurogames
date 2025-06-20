@@ -31,53 +31,26 @@ SQLite database (`games.db`) with tables:
 The primary interface is a Babashka CLI tool that can be invoked using the `games` command:
 
 ```bash
-# List all games
-games list
+# Game Management
+games list [status]                      # List games with a given status (default: Playing)
+games search <pattern>                   # Search games by name/pattern
+games show <id>                          # Show detailed game info
+games add <bgg-id>                       # Add a new game from Board Game Geek
+games sync <id>                          # Update game data from BGG
 
-# List games with a specific status
-games list owned
+# Game Play Tracking
+games play <id> <winner> [score]         # Record a game result
+games history <id>                       # Show play history for a game
+games recent [limit]                     # Show recent games played (default: 15)
 
-# Look up a game by name/pattern
-games lookup <pattern>
+# Statistics & Analysis
+games stats                              # Show win statistics and totals
+games notes <id> <field> <value>         # Update game notes
 
-# Get game details by ID
-games id <id>
-
-# Add a new game from Board Game Geek
-games add-game <bgg-id>
-
-# Record a game result
-games add-result <id> <winner> <score>
-
-# Update game data from BGG
-games update <id>
-
-# Update game notes
-games update-notes <id> <field> <value>
-
-# View game history
-games history <id>
-
-# View recent results
-games results [limit]
-
-# View last played games
-games last [limit]
-
-# View win statistics
-games wins
-
-# View total wins per player
-games win-totals
-
-# Run a custom SQL query
-games query <sql>
-
-# Export data
-games export-data <filename>
-
-# Backup database
-games backup
+# Utilities
+games query <sql>                        # Run custom SQL query
+games export <filename>                  # Export data to file
+games backup                             # Create database backup
 ```
 
 ### Running the Web Application
