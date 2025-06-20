@@ -8,7 +8,7 @@
             [babashka.fs :as fs]
             [pod.babashka.go-sqlite3 :as sql]))
 
-(def cli-version "0.1.5")
+(def cli-version "0.2.0")
 
 (def cli-options
   [["-h" "--help" "Show help information"]
@@ -231,7 +231,8 @@ Commands:
   Game Play Tracking:
     play <id> <winner> [<score>]         Record a game result
     history <id>                         Show play history for a game
-    recent [<limit>]                     Show recent games played
+    last [<limit>]                       Show when games were last played
+    recent [<limit>]                     Show recent game results
 
   Statistics & Analysis:
     stats                                Show win statistics and totals
@@ -271,6 +272,7 @@ Commands:
                 "search" (lookup (first cmd-args) options)
                 "show" (view-game (first cmd-args) options)
                 "history" (history (first cmd-args) options)
+                "last" (last-played (or (first cmd-args) 100) options)
                 "recent" (recent (or (first cmd-args) 15) options)
                 "stats" (stats options)
                 "sync" (update-game-data (first cmd-args) options)
@@ -283,7 +285,6 @@ Commands:
                 ;; Legacy command aliases for backward compatibility
                 "lookup" (lookup (first cmd-args) options)
                 "id" (view-game (first cmd-args) options)
-                "last" (last-played (or (first cmd-args) 100) options)
                 "results" (recent (or (first cmd-args) 15) options)
                 "wins" (stats options)
                 "win-totals" (stats options)

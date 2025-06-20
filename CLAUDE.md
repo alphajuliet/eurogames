@@ -41,7 +41,8 @@ games sync <id>                          # Update game data from BGG
 # Game Play Tracking
 games play <id> <winner> [score]         # Record a game result
 games history <id>                       # Show play history for a game
-games recent [limit]                     # Show recent games played (default: 15)
+games last [limit]                       # Show when games were last played (default: 100)
+games recent [limit]                     # Show recent game results (default: 15)
 
 # Statistics & Analysis
 games stats                              # Show win statistics and totals
