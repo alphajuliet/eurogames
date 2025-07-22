@@ -26,7 +26,8 @@ def game(game_id):
 def played():
     db = Database(db_path)
     results = db["played"].rows
-    return render_template("results.html", results=results)
+    games = db.query("SELECT id, name FROM bgg ORDER BY name")
+    return render_template("results.html", results=results, games=list(games))
 
 @app.route("/lastPlayed")
 def lastPlayed():
@@ -46,6 +47,7 @@ def totals():
     db = Database(db_path)
     sums = db.query("SELECT SUM(Games) as Games, SUM(Andrew) AS Andrew, SUM(Trish) AS Trish, Sum(Draw) AS Draw FROM winner")
     return jsonify(list(sums))
+
 
 @app.route("/addResult", methods=["POST"])
 def addResult():

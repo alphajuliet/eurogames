@@ -2,8 +2,13 @@
   <form hx-post="/addResult" hx-target="#content">
     <label for="input-date">Date</label>
     <input type="date" id="input-date" name="date" />
-    <label for="input-id"> Game ID </label>
-    <input type="number" id="input-id" name="id" />
+    <label for="input-game">Game</label>
+    <select id="input-game" name="id" required>
+      <option value="">Select a game...</option>
+      {% for game in games %}
+      <option value="{{ game.id }}">{{ game.name }}</option>
+      {% endfor %}
+    </select>
     <label for="input-winner">Winner</label>
     <select type="text" id="input-winner" name="winner" >
       <option value="Andrew">Andrew</option>
@@ -40,7 +45,8 @@
         <td class="numeric">{{ result.id }}</td>
         <td class="link" hx-get="/game/{{ result.id }}" hx-target="#content" hx-push-url="true">{{ result.name }}</td>
         <td>{{ result.winner }}</td>
-        <td>{{ result.scores }} </td>
+        <td>{{ result.scores }}</td>
+        <td>{{ result.comment }}</td>
       </tr>
       {% endfor %}
     </tbody>
