@@ -19,10 +19,7 @@ pom.xml.asc
 .clj-kondo/
 *.bal
 *.numbers
-*.db
-*.db-*
-*.json
-*.csv
+data/
 .DS_Store
 .sesskey
 uv.lock

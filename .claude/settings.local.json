@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bb -m cli.games recent:*)",
+      "Bash(bb -m cli.games:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": false
+}
