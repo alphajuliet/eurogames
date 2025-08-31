@@ -2,6 +2,9 @@ name = "games"
 compatibility_date = "2025-08-10"
 main = "src/api/index.ts"
 
+[vars]
+REQUIRE_AUTH = "true"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "games"

@@ -1,5 +1,7 @@
 export interface Env {
   DB: D1Database;
+  API_KEYS?: string;
+  REQUIRE_AUTH?: string;
 }
 
 export interface Game {
@@ -107,6 +109,14 @@ export type GameStatus = 'Playing' | 'Inbox' | 'Completed' | 'Sold' | 'Wishliste
 export type OutputFormat = 'json' | 'table' | 'plain' | 'edn';
 export type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS';
 
+export type Permission = 'read' | 'write' | 'delete' | 'export' | 'query';
+
+export interface AuthContext {
+  authenticated: boolean;
+  permissions: Permission[];
+  keyId?: string;
+}
+
 export interface RouteHandler {
-  (request: Request, env: Env, params?: Record<string, string>): Promise<Response>;
+  (request: Request, env: Env, params?: Record<string, string>, auth?: AuthContext): Promise<Response>;
 }

@@ -1,5 +1,6 @@
-import { Env, RouteHandler } from './types';
+import { Env, RouteHandler, AuthContext } from './types';
 import { handleCORS, createErrorResponse, matchesPattern, extractPathParams } from './utils';
+import { authenticateRequest } from './middleware/auth';
 
 import { 
   getGames, 
@@ -66,6 +67,11 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     return corsResponse;
   }
 
+  const authResult = await authenticateRequest(request, env);
+  if (authResult instanceof Response) {
+    return authResult;
+  }
+
   const url = new URL(request.url);
   const method = request.method;
   const pathname = url.pathname;
@@ -74,7 +80,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     if (route.method === method && matchesPattern(pathname, route.pattern)) {
       try {
         const params = extractPathParams(pathname, route.pattern);
-        return await route.handler(request, env, params);
+        return await route.handler(request, env, params, authResult);
       } catch (error: any) {
         console.error(`Error in route ${route.method} ${route.pattern}:`, error);
         return createErrorResponse(
@@ -95,6 +101,11 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 
 async function handleExport(request: Request, env: Env): Promise<Response> {
   try {
+    const authResult = await authenticateRequest(request, env);
+    if (authResult instanceof Response) {
+      return authResult;
+    }
+
     const url = new URL(request.url);
     const format = url.searchParams.get('format') || 'json';
 
@@ -143,6 +154,11 @@ async function handleExport(request: Request, env: Env): Promise<Response> {
 
 async function handleQuery(request: Request, env: Env): Promise<Response> {
   try {
+    const authResult = await authenticateRequest(request, env);
+    if (authResult instanceof Response) {
+      return authResult;
+    }
+
     const body = await request.json();
     const { sql } = body;
 
@@ -207,33 +223,44 @@ async function handleRoot(request: Request): Promise<Response> {
     name: 'Eurogames API',
     version: '1.0.0',
     description: 'REST API for Eurogames board game tracking system',
+    authentication: {
+      method: 'API Key',
+      headers: ['Authorization: Bearer <key>', 'X-API-Key: <key>'],
+      permissions: {
+        'read': 'View games, plays, and statistics',
+        'write': 'Add/modify games and plays',
+        'delete': 'Delete play records',
+        'export': 'Export data',
+        'query': 'Execute custom queries'
+      }
+    },
     endpoints: {
       games: {
-        'GET /v1/games': 'List games with optional filtering',
-        'GET /v1/games/{id}': 'Get game details',
-        'POST /v1/games': 'Add new game from BGG',
-        'PATCH /v1/games/{id}/notes': 'Update game notes',
-        'PUT /v1/games/{id}/sync': 'Sync game data from BGG',
-        'GET /v1/games/{id}/history': 'Get game play history'
+        'GET /v1/games': 'List games with optional filtering [read]',
+        'GET /v1/games/{id}': 'Get game details [read]',
+        'POST /v1/games': 'Add new game from BGG [write]',
+        'PATCH /v1/games/{id}/notes': 'Update game notes [write]',
+        'PUT /v1/games/{id}/sync': 'Sync game data from BGG [write]',
+        'GET /v1/games/{id}/history': 'Get game play history [read]'
       },
       plays: {
-        'GET /v1/plays': 'List game plays with filtering',
-        'POST /v1/plays': 'Record new game result',
-        'GET /v1/plays/{id}': 'Get specific play record',
-        'PUT /v1/plays/{id}': 'Update play record',
-        'DELETE /v1/plays/{id}': 'Delete play record'
+        'GET /v1/plays': 'List game plays with filtering [read]',
+        'POST /v1/plays': 'Record new game result [write]',
+        'GET /v1/plays/{id}': 'Get specific play record [read]',
+        'PUT /v1/plays/{id}': 'Update play record [write]',
+        'DELETE /v1/plays/{id}': 'Delete play record [delete]'
       },
       statistics: {
-        'GET /v1/stats/winners': 'Win statistics by game',
-        'GET /v1/stats/totals': 'Overall win totals',
-        'GET /v1/stats/last-played': 'Last played dates',
-        'GET /v1/stats/recent': 'Recent game plays',
-        'GET /v1/stats/players/{player}': 'Player statistics',
-        'GET /v1/stats/games': 'Game collection statistics'
+        'GET /v1/stats/winners': 'Win statistics by game [read]',
+        'GET /v1/stats/totals': 'Overall win totals [read]',
+        'GET /v1/stats/last-played': 'Last played dates [read]',
+        'GET /v1/stats/recent': 'Recent game plays [read]',
+        'GET /v1/stats/players/{player}': 'Player statistics [read]',
+        'GET /v1/stats/games': 'Game collection statistics [read]'
       },
       utilities: {
-        'GET /v1/export': 'Export all data (JSON)',
-        'POST /v1/query': 'Execute custom SELECT query'
+        'GET /v1/export': 'Export all data (JSON) [export]',
+        'POST /v1/query': 'Execute custom SELECT query [query]'
       }
     },
     documentation: 'https://github.com/your-repo/eurogames-api'
