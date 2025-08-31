@@ -43,35 +43,51 @@ games backup                             # Create database backup
 
 ### REST API (Cloudflare Workers)
 
-Modern TypeScript API deployed on Cloudflare Workers with D1 database:
+Modern TypeScript API deployed on Cloudflare Workers with D1 database and API key authentication:
 
 **Base URL:** `https://your-worker.your-subdomain.workers.dev`
 
+#### Authentication
+The API requires authentication via API keys with role-based permissions:
+
+```bash
+# Using Authorization header
+curl -H "Authorization: Bearer your-api-key" https://api.example.com/v1/games
+
+# Using X-API-Key header
+curl -H "X-API-Key: your-api-key" https://api.example.com/v1/plays
+```
+
+**Permission Levels:**
+- **Admin**: Full access (read, write, delete, export, query)
+- **User**: Standard access (read, write)
+- **Read-only**: View-only access (read)
+
 #### Games Management
-- `GET /v1/games` - List games with filtering, pagination, search
-- `GET /v1/games/{id}` - Get detailed game info with stats
-- `POST /v1/games` - Add new game from BGG
-- `PATCH /v1/games/{id}/notes` - Update game notes and status
-- `GET /v1/games/{id}/history` - Get game play history
+- `GET /v1/games` - List games with filtering, pagination, search **[read]**
+- `GET /v1/games/{id}` - Get detailed game info with stats **[read]**
+- `POST /v1/games` - Add new game from BGG **[write]**
+- `PATCH /v1/games/{id}/notes` - Update game notes and status **[write]**
+- `GET /v1/games/{id}/history` - Get game play history **[read]**
 
 #### Play Tracking
-- `GET /v1/plays` - List game plays with filtering
-- `POST /v1/plays` - Record new game result
-- `GET /v1/plays/{id}` - Get specific play record
-- `PUT /v1/plays/{id}` - Update play record
-- `DELETE /v1/plays/{id}` - Delete play record
+- `GET /v1/plays` - List game plays with filtering **[read]**
+- `POST /v1/plays` - Record new game result **[write]**
+- `GET /v1/plays/{id}` - Get specific play record **[read]**
+- `PUT /v1/plays/{id}` - Update play record **[write]**
+- `DELETE /v1/plays/{id}` - Delete play record **[delete]**
 
 #### Statistics & Analytics
-- `GET /v1/stats/winners` - Win statistics by game
-- `GET /v1/stats/totals` - Overall win totals
-- `GET /v1/stats/last-played` - Last played dates
-- `GET /v1/stats/recent` - Recent game plays
-- `GET /v1/stats/players/{player}` - Player statistics
-- `GET /v1/stats/games` - Collection statistics
+- `GET /v1/stats/winners` - Win statistics by game **[read]**
+- `GET /v1/stats/totals` - Overall win totals **[read]**
+- `GET /v1/stats/last-played` - Last played dates **[read]**
+- `GET /v1/stats/recent` - Recent game plays **[read]**
+- `GET /v1/stats/players/{player}` - Player statistics **[read]**
+- `GET /v1/stats/games` - Collection statistics **[read]**
 
 #### Utilities
-- `GET /v1/export` - Export all data as JSON
-- `POST /v1/query` - Execute custom SELECT queries
+- `GET /v1/export` - Export all data as JSON **[export]**
+- `POST /v1/query` - Execute custom SELECT queries **[query]**
 
 ### Web Application
 
@@ -94,7 +110,11 @@ bb -m cli.games list
 # Install dependencies
 npm install
 
-# Run locally
+# Set up authentication (required for production)
+wrangler secret put API_KEYS
+# Enter: admin-key:admin,user-key:user,readonly-key:read-only
+
+# Run locally (auth disabled in dev mode)
 npm run dev
 
 # Deploy to Cloudflare
@@ -116,4 +136,7 @@ npm run migrate
 - **Data Export/Import**: Backup and restore game data
 - **Search & Filtering**: Find games by name, status, complexity
 - **Player Tracking**: Individual statistics and achievements
+- **Secure REST API**: Role-based authentication with API keys
+- **Cloud Database**: Cloudflare D1 for scalable data storage
+- **CORS Support**: Cross-origin requests for web applications
 
