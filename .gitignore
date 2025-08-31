@@ -26,3 +26,5 @@ pom.xml.asc
 .DS_Store
 .sesskey
 uv.lock
+/node_modules
+.wrangler/
