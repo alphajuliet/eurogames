@@ -11,16 +11,15 @@ Eurogames is a comprehensive board game tracking system that maintains a databas
 The project uses a multi-language, multi-platform architecture:
 
 - **CLI Tool (Babashka/Clojure)**: Primary interface in `src/cli/` for interacting with the system
-- **REST API (TypeScript/Cloudflare Workers)**: Modern API layer in `src/api/` using D1 database
 - **Web Application (Python/Flask)**: Web interface in `src/app/` to view game data and results
-- **Migration Tools**: Scripts for SQLite to D1 database migration
+- **Migration Tools**: Scripts for SQLite to Cloudflare D1 database migration
 - **Sync Scripts (Racket)**: Scripts in `src/sync/` for fetching data from Board Game Geek
 - **Analysis Tools (Julia)**: Data analysis scripts in `src/analysis/`
 
 ## Database Structure
 
 **SQLite (Local Development)**: `data/games.db`
-**Cloudflare D1 (Production API)**: Configured in `wrangler.toml`
+**Cloudflare D1 (Cloud Migration Target)**: Configured in `wrangler.toml`
 
 Core tables:
 - `bgg`: Game information from Board Game Geek
@@ -64,25 +63,21 @@ games export <filename>                  # Export data to file
 games backup                             # Create database backup
 ```
 
-### REST API Commands
+### Database Migration
 
-The TypeScript API runs on Cloudflare Workers:
+To migrate data from SQLite to Cloudflare D1:
 
 ```bash
-# Install dependencies
+# Install migration dependencies (sqlite3 and wrangler)
 npm install
 
-# Run API locally for development
-npm run dev
+# Export SQLite data to SQL files
+npm run export-data
 
-# Deploy API to Cloudflare Workers
-npm run deploy
-
-# Build TypeScript
-npm run build
-
-# Run database migration from SQLite to D1
+# Run complete migration process (exports data and imports to D1)
 npm run migrate
+# OR run the migration script manually:
+./scripts/migrate-to-d1.sh
 ```
 
 ### Running the Web Application
@@ -125,49 +120,16 @@ games -f json <command>
 ## Data Management
 
 - **Local Database**: `data/games.db` (SQLite) - excluded from git via `.gitignore`
-- **Production Database**: Cloudflare D1 - configured via `wrangler.toml`
+- **Cloud Database**: Cloudflare D1 - configured via `wrangler.toml` (migration target)
 - **Backups**: Stored in `data/backup/`
 - **Migration**: Use `./scripts/migrate-to-d1.sh` to migrate SQLite to D1
 - **Common queries**: Located in `data/queries/games/`
-
-## REST API Endpoints
-
-The API provides comprehensive endpoints for all game management operations:
-
-**Base URL**: `https://your-worker.your-subdomain.workers.dev`
-
-### Games Management
-- `GET /v1/games` - List games with filtering, pagination
-- `GET /v1/games/{id}` - Get detailed game info
-- `POST /v1/games` - Add new game from BGG
-- `PATCH /v1/games/{id}/notes` - Update game notes
-
-### Play Tracking
-- `GET /v1/plays` - List game plays
-- `POST /v1/plays` - Record new game result
-- `PUT /v1/plays/{id}` - Update play record
-- `DELETE /v1/plays/{id}` - Delete play record
-
-### Statistics
-- `GET /v1/stats/winners` - Win statistics by game
-- `GET /v1/stats/totals` - Overall win totals
-- `GET /v1/stats/recent` - Recent plays
-- `GET /v1/stats/players/{player}` - Player statistics
-
-### Utilities
-- `GET /v1/export` - Export all data
-- `POST /v1/query` - Execute SELECT queries
 
 ## File Structure
 
 ```
 src/
-├── api/              # TypeScript REST API for Cloudflare Workers
-│   ├── handlers/     # Endpoint handlers (games, plays, stats)
-│   ├── types.ts      # TypeScript interfaces
-│   ├── utils.ts      # Utilities and validation
-│   └── index.ts      # Main API entry point
-├── app/              # Flask web application  
+├── app/              # Flask web application
 ├── cli/              # Babashka CLI tool
 ├── sync/             # BGG sync scripts (Racket)
 └── analysis/         # Data analysis (Julia)
@@ -179,7 +141,18 @@ data/                 # Local database and queries (gitignored)
 
 ## Configuration Files
 
-- `wrangler.toml` - Cloudflare Workers and D1 database configuration  
-- `package.json` - Node.js dependencies and scripts
-- `tsconfig.json` - TypeScript compilation settings
+- `wrangler.toml` - Cloudflare D1 database configuration for migration
+- `package.json` - Node.js dependencies for migration scripts (sqlite3, wrangler)
 - `MIGRATION.md` - Detailed database migration guide
+
+## Migration Scripts
+
+The project includes Node.js-based migration tools to export SQLite data to Cloudflare D1:
+
+- `scripts/export-to-d1.js` - Exports SQLite tables to D1-compatible SQL INSERT statements
+- `scripts/migrate-to-d1.sh` - Complete migration orchestration script
+- `scripts/verify-migration.js` - Verification script for migration integrity
+
+**Dependencies:**
+- `sqlite3` - Node.js SQLite library for reading local database
+- `wrangler` - Cloudflare CLI for D1 database operations
