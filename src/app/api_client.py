@@ -173,14 +173,17 @@ class EurogamesAPIClient:
             return response['data'] if isinstance(response['data'], list) else []
         return response if isinstance(response, list) else response.get('plays', [])
 
-    def get_played_results(self) -> List[Dict[str, Any]]:
+    def get_played_results(self, limit: int = 50) -> List[Dict[str, Any]]:
         """
         Get game play results/history.
 
+        Args:
+            limit: Maximum number of results to return (default: 50)
+
         Returns:
-            List of played games with results
+            List of played games with results (up to limit)
         """
-        response = self._get('/v1/plays')
+        response = self._get('/v1/plays', params={'limit': limit})
         # API returns wrapped format: {"data": [...], "meta": {...}}
         if isinstance(response, dict) and 'data' in response:
             return response['data'] if isinstance(response['data'], list) else []
