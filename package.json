@@ -4,7 +4,8 @@
   "description": "Eurogames SQLite to Cloudflare D1 migration tools",
   "scripts": {
     "migrate": "./scripts/migrate-to-d1.sh",
-    "export-data": "node scripts/export-to-d1.js"
+    "export-data": "node scripts/export-to-d1.js",
+    "reset-and-migate": "node scripts/reset-and-migrate.js"
   },
   "dependencies": {
     "sqlite3": "^5.1.6"
