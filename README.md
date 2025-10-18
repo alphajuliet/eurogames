@@ -42,11 +42,13 @@ games backup                             # Create database backup
 
 ### Web Application
 
-Flask-based web interface for:
+Flask-based web interface that connects to REST API for:
 - Browsing game collection
 - Recording game results with forms
 - Viewing statistics and win rates
 - Game history and play tracking
+
+**Requirements**: API authentication via `EUROGAMES_API_KEY` environment variable
 
 ## Quick Start
 
@@ -58,6 +60,11 @@ bb -m cli.games list
 
 ### Web Application
 ```bash
+# Set required environment variables
+export EUROGAMES_API_URL=https://eurogames.web-c10.workers.dev
+export EUROGAMES_API_KEY=your-api-key-here
+export FLASK_SECRET_KEY=your-secret-key
+
 # Start the Flask web server
 ./run-app.sh
 ```
@@ -74,11 +81,32 @@ npm run migrate
 ## Features
 
 - **Game Collection Management**: Track board games with BGG integration
-- **Play Recording**: Log game sessions with winners and scores  
+- **Play Recording**: Log game sessions with winners and scores
 - **Statistics**: Win rates, play frequency, player performance
 - **Multi-format Output**: JSON, EDN, table, plain text formats
 - **Data Export/Import**: Backup and restore game data
 - **Search & Filtering**: Find games by name, status, complexity
 - **Player Tracking**: Individual statistics and achievements
 - **Cloud Migration**: Support for migrating data to Cloudflare D1
+- **REST API Integration**: Web app communicates with remote API for scalable data access
+
+## Testing
+
+Test scripts and documentation are organized in the `test/` folder:
+
+- **test/scripts/** - Automated test scripts for API endpoints and Flask routes
+- **test/docs/** - Technical documentation, API guides, and fix summaries
+
+To run tests:
+```bash
+# Test API connectivity
+uv run python test/scripts/test_api_debug.py
+
+# Test Flask endpoints
+bash test/scripts/test_all_endpoints.sh
+
+# See test/README.md for complete testing guide
+```
+
+See [test/README.md](test/README.md) for complete testing documentation.
 

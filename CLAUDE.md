@@ -11,15 +11,17 @@ Eurogames is a comprehensive board game tracking system that maintains a databas
 The project uses a multi-language, multi-platform architecture:
 
 - **CLI Tool (Babashka/Clojure)**: Primary interface in `src/cli/` for interacting with the system
-- **Web Application (Python/Flask)**: Web interface in `src/app/` to view game data and results
+- **Web Application (Python/Flask)**: Web interface in `src/app/` to view game data and results via REST API
 - **Migration Tools**: Scripts for SQLite to Cloudflare D1 database migration
 - **Sync Scripts (Racket)**: Scripts in `src/sync/` for fetching data from Board Game Geek
 - **Analysis Tools (Julia)**: Data analysis scripts in `src/analysis/`
 
-## Database Structure
+## API and Database Structure
 
-**SQLite (Local Development)**: `data/games.db`
-**Cloudflare D1 (Cloud Migration Target)**: Configured in `wrangler.toml`
+**REST API Server**: The Flask web application communicates with a REST API at `https://eurogames.web-c10.workers.dev` (configurable via `EUROGAMES_API_URL`). The API uses Bearer token authentication via `EUROGAMES_API_KEY` environment variable.
+
+**SQLite (Local Development)**: `data/games.db` (used by CLI tool)
+**Cloudflare D1 (Cloud Migration Target)**: Configured in `wrangler.toml` (backend for REST API)
 
 Core tables:
 - `bgg`: Game information from Board Game Geek
@@ -82,10 +84,19 @@ npm run migrate
 
 ### Running the Web Application
 
+The Flask web application requires environment variables for REST API connectivity:
+
 ```bash
+# Set required environment variables
+export EUROGAMES_API_URL=https://eurogames.web-c10.workers.dev
+export EUROGAMES_API_KEY=your-api-key-here
+export FLASK_SECRET_KEY=your-secret-key
+
 # Start the Flask web server
 ./run-app.sh
 ```
+
+The web application connects to the REST API endpoints at `/v1/games`, `/v1/plays`, `/v1/stats/`, etc.
 
 ### Development Commands
 
@@ -119,6 +130,13 @@ games -f json <command>
 
 ## Data Management
 
+### Web Application (Flask)
+- **Data Source**: REST API at `https://eurogames.web-c10.workers.dev` (or `EUROGAMES_API_URL`)
+- **Authentication**: Bearer token via `EUROGAMES_API_KEY` environment variable
+- **API Client**: `src/app/api_client.py` provides `EurogamesAPIClient` class
+- **Testing**: See `test/README.md` for test scripts and documentation
+
+### CLI Tool and Local Development
 - **Local Database**: `data/games.db` (SQLite) - excluded from git via `.gitignore`
 - **Cloud Database**: Cloudflare D1 - configured via `wrangler.toml` (migration target)
 - **Backups**: Stored in `data/backup/`
@@ -129,10 +147,14 @@ games -f json <command>
 
 ```
 src/
-├── app/              # Flask web application
+├── app/              # Flask web application (uses REST API client)
 ├── cli/              # Babashka CLI tool
 ├── sync/             # BGG sync scripts (Racket)
 └── analysis/         # Data analysis (Julia)
+
+test/                 # Test scripts and documentation
+├── scripts/          # Test and debug scripts
+└── docs/             # API and debugging documentation
 
 migrations/           # D1 database migration files
 scripts/              # Migration and utility scripts
@@ -144,6 +166,10 @@ data/                 # Local database and queries (gitignored)
 - `wrangler.toml` - Cloudflare D1 database configuration for migration
 - `package.json` - Node.js dependencies for migration scripts (sqlite3, wrangler)
 - `MIGRATION.md` - Detailed database migration guide
+- `.env` (local, not in git) - Environment variables for Flask app:
+  - `EUROGAMES_API_URL` - REST API base URL
+  - `EUROGAMES_API_KEY` - REST API authentication token
+  - `FLASK_SECRET_KEY` - Flask session secret key
 
 ## Migration Scripts
 
