@@ -1,0 +1,97 @@
+Metadata-Version: 2.4
+Name: eurogames
+Version: 0.1.0
+Summary: Add your description here
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: fastcore>=1.8.1
+Requires-Dist: fastlite>=0.1.3
+Requires-Dist: flask>=3.1.0
+Requires-Dist: jinja2>=3.1.6
+Requires-Dist: python-fasthtml>=0.12.12
+Requires-Dist: requests>=2.31.0
+
+# Eurogames
+
+A comprehensive board game tracking system that manages a collection of eurogames with data from Board Game Geek (BGG). The system includes a CLI tool and web interface for tracking games, recording plays, and analyzing statistics.
+
+## Architecture
+
+- **CLI Tool (Babashka/Clojure)**: Primary command-line interface for game management
+- **Web Application (Python/Flask)**: Web interface for viewing games and recording results
+- **Database**: SQLite locally, with Cloudflare D1 migration support
+- **Sync Scripts (Racket)**: Tools for fetching data from Board Game Geek
+- **Analysis Tools (Julia)**: Data analysis and statistics
+
+## Applications
+
+### CLI Tool (`games` command)
+
+The primary interface built with Babashka (Clojure):
+
+```bash
+# Game Management
+games list [status]                      # List games by status (default: Playing)
+games search <pattern>                   # Search games by name
+games show <id>                          # Show detailed game information
+games add <bgg-id>                       # Add new game from BGG
+games sync <id>                          # Update game data from BGG
+
+# Game Play Tracking
+games play <id> <winner> [score]         # Record a game result
+games history <id>                       # Show play history
+games recent [limit]                     # Show recent results (default: 15)
+games last [limit]                       # Show last played dates (default: 100)
+
+# Statistics & Analysis
+games stats                              # Show win statistics
+games notes <id> <field> <value>         # Update game notes
+
+# Utilities
+games query <sql>                        # Run custom SQL queries
+games export <filename>                  # Export data to JSON
+games backup                             # Create database backup
+```
+
+### Web Application
+
+Flask-based web interface for:
+- Browsing game collection
+- Recording game results with forms
+- Viewing statistics and win rates
+- Game history and play tracking
+
+## Quick Start
+
+### CLI Tool
+```bash
+# Install dependencies and run CLI
+bb -m cli.games list
+```
+
+### Web Application
+```bash
+# Start the Flask web server
+./run-app.sh
+```
+
+### Database Migration to Cloudflare D1
+```bash
+# Install Node.js dependencies for migration scripts
+npm install
+
+# Migrate from SQLite to Cloudflare D1
+npm run migrate
+```
+
+## Features
+
+- **Game Collection Management**: Track board games with BGG integration
+- **Play Recording**: Log game sessions with winners and scores  
+- **Statistics**: Win rates, play frequency, player performance
+- **Multi-format Output**: JSON, EDN, table, plain text formats
+- **Data Export/Import**: Backup and restore game data
+- **Search & Filtering**: Find games by name, status, complexity
+- **Player Tracking**: Individual statistics and achievements
+- **Cloud Migration**: Support for migrating data to Cloudflare D1
+

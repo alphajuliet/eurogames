@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+src/app/api_client.py
+src/app/app.py
+src/app/main.py
+src/eurogames.egg-info/PKG-INFO
+src/eurogames.egg-info/SOURCES.txt
+src/eurogames.egg-info/dependency_links.txt
+src/eurogames.egg-info/requires.txt
+src/eurogames.egg-info/top_level.txt
