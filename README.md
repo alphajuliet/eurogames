@@ -9,6 +9,7 @@ A comprehensive board game tracking system that manages a collection of eurogame
 - **Database**: SQLite locally, with Cloudflare D1 migration support
 - **Sync Scripts (Racket)**: Tools for fetching data from Board Game Geek
 - **Analysis Tools (Julia)**: Data analysis and statistics
+- **API Scripts (Shell)**: Direct REST API shell scripts for querying and updating data
 
 ## Applications
 
@@ -49,6 +50,21 @@ Flask-based web interface that connects to REST API for:
 - Game history and play tracking
 
 **Requirements**: API authentication via `EUROGAMES_API_KEY` environment variable
+
+### API Scripts
+
+Direct REST API shell scripts for querying and updating data:
+
+```bash
+# List games in JSON format
+./src/api-scripts/list-games.sh                  # List all games
+./src/api-scripts/list-games.sh "Playing"        # Filter by status
+
+# Update game notes
+./src/api-scripts/update-notes.sh <id> <field> <value>
+```
+
+**Requirements**: Set `EUROGAMES_API_URL` and `EUROGAMES_API_KEY` environment variables
 
 ## Quick Start
 

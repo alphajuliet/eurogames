@@ -65,6 +65,19 @@ games export <filename>                  # Export data to file
 games backup                             # Create database backup
 ```
 
+### API Scripts
+
+Direct REST API shell scripts for querying and updating data (require `EUROGAMES_API_URL` and `EUROGAMES_API_KEY`):
+
+```bash
+# List all games in JSON format
+./src/api-scripts/list-games.sh                  # List all games
+./src/api-scripts/list-games.sh "Playing"        # List games with specific status
+
+# Update game notes
+./src/api-scripts/update-notes.sh <id> <field> <value>    # Update a note field
+```
+
 ### Database Migration
 
 To migrate data from SQLite to Cloudflare D1:
@@ -148,6 +161,7 @@ games -f json <command>
 ```
 src/
 ├── app/              # Flask web application (uses REST API client)
+├── api-scripts/      # REST API shell scripts for direct API calls
 ├── cli/              # Babashka CLI tool
 ├── sync/             # BGG sync scripts (Racket)
 └── analysis/         # Data analysis (Julia)
@@ -165,7 +179,7 @@ data/                 # Local database and queries (gitignored)
 
 - `wrangler.toml` - Cloudflare D1 database configuration for migration
 - `package.json` - Node.js dependencies for migration scripts (sqlite3, wrangler)
-- `MIGRATION.md` - Detailed database migration guide
+- `docs/MIGRATION.md` - Detailed database migration guide
 - `.env` (local, not in git) - Environment variables for Flask app:
   - `EUROGAMES_API_URL` - REST API base URL
   - `EUROGAMES_API_KEY` - REST API authentication token

@@ -85,7 +85,7 @@ Visit `http://localhost:5000` to access the app.
 3. **test_all_endpoints.sh** - Integration test for all Flask pages
 4. **API_FIX_SUMMARY.md** - Technical details of the initial data display fix
 5. **WINNER_FIX_SUMMARY.md** - Technical details of the winner endpoint fix
-6. **QUICKSTART.md** - Setup and running instructions
+6. **docs/QUICKSTART.md** - Setup and running instructions
 
 ## Data Statistics
 
@@ -140,8 +140,8 @@ The application now successfully displays:
 ## Support & Documentation
 
 - **API Documentation**: See `eurogames-api.json`
-- **Migration Guide**: See `API_MIGRATION.md`
-- **Quick Start**: See `QUICKSTART.md`
+- **Migration Guide**: See `docs/API_MIGRATION.md`
+- **Quick Start**: See `docs/QUICKSTART.md`
 - **API Client Usage**: See `API_CLIENT_GUIDE.md`
 
 ---

@@ -84,9 +84,9 @@ bash test/scripts/test_flask_games.sh
 
 For important user-facing documentation, see the project root:
 - **README.md** - Project overview
-- **QUICKSTART.md** - Getting started guide
-- **API_MIGRATION.md** - Full API migration guide
-- **API_DEPLOYMENT_CHECKLIST.md** - Deployment checklist
+- **docs/QUICKSTART.md** - Getting started guide
+- **docs/API_MIGRATION.md** - Full API migration guide
+- **docs/API_DEPLOYMENT_CHECKLIST.md** - Deployment checklist
 - **CLAUDE.md** - Project architecture and commands
 
 ## When to Use Tests
