@@ -26,7 +26,7 @@
 (define (get-game-data id)
   (define host "boardgamegeek.com")
   (define uri (format "/xmlapi2/thing?stats=1&id=~a" (to-string id)))
-  (define headers '())
+  (define headers (list (string-append "Authorization: Bearer " (getenv "BGG_API_KEY"))))
   (~> (h:https-get host uri headers)
       (ssax:xml->sxml '())))
 
