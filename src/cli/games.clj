@@ -4,9 +4,7 @@
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.data.csv :as csv]
             [cli.output :as output]
-            [clojure.java.shell :as shell]
-            [babashka.fs :as fs]
-            [pod.babashka.go-sqlite3 :as sql]))
+            [clojure.java.shell :as shell]))
 
 (def cli-version "0.2.0")
 
@@ -18,10 +16,6 @@
     :validate [#(contains? #{"json" "edn" "plain" "table"} %) "Must be one of: json, edn, plain, table"]]
    ["-s" "--sort-by COLUMN" "Sort output by the specified column (for table format)"
     :default nil]
-   ["-d" "--db PATH" "Database file path"
-    :default "data/games.db"]
-   ["-b" "--backup-dir PATH" "Backup directory path"
-    :default "data/backup"]
    [nil "--verbose" "Enable verbose output"]])
 
 (defn current-date
@@ -31,56 +25,84 @@
     (format "%04d-%02d-%02d" (.getYear date) (.getMonthValue date) (.getDayOfMonth date))))
 
 ;; ------------------------------------------------------
+;; D1 Database Functions
+;; ------------------------------------------------------
+
+(defn escape-sql
+  "Escape single quotes in SQL strings"
+  [s]
+  (str/replace (str s) "'" "''"))
+
+(defn sql-string
+  "Wrap a value in SQL single quotes with proper escaping"
+  [s]
+  (str "'" (escape-sql s) "'"))
+
+(defn d1-query
+  "Execute a SQL query against D1 and return results"
+  [sql-query]
+  (let [{:keys [exit out err]} (shell/sh "wrangler" "d1" "execute" "games"
+                                          "--remote" "--json"
+                                          "--command" sql-query)]
+    (if (zero? exit)
+      (-> out (json/parse-string true) first :results)
+      (throw (ex-info "D1 query failed" {:error err :sql sql-query})))))
+
+(defn d1-execute!
+  "Execute a SQL statement against D1 (for INSERT/UPDATE/DELETE)"
+  [sql-statement]
+  (let [{:keys [exit out err]} (shell/sh "wrangler" "d1" "execute" "games"
+                                          "--remote" "--json"
+                                          "--command" sql-statement)]
+    (if (zero? exit)
+      (-> out (json/parse-string true) first :meta)
+      (throw (ex-info "D1 execute failed" {:error err :sql sql-statement})))))
+
+;; ------------------------------------------------------
 (defn print-output
   "Print data according to the specified format"
   [data & {:keys [format sort-by] :or {format "json"}}]
   (println (output/format-output data format :sort-by sort-by)))
 
-(defn get-db
-  "Get the database file path"
-  [options]
-  (or (:db options) "data/games.db"))
-
 (defn query
-  "Query the db with SQL. No input checking is done."
-  [q options]
+  "Query the db with SQL and print output."
+  [sql-query options]
   (try
-    (let [db (get-db options)]
-      (print-output (sql/query db q)
-                    :format (:format options)
-                    :sort-by (:sort-by options)))
+    (print-output (d1-query sql-query)
+                  :format (:format options)
+                  :sort-by (:sort-by options))
     (catch Exception e
       (println (.getMessage e)))))
 
 (defn list-games
   "List all games"
   [status options]
-  (query ["SELECT id, name FROM game_list2 WHERE status = ?" status] options))
+  (query (str "SELECT id, name FROM game_list2 WHERE status = " (sql-string status)) options))
 
 (defn lookup
   "Lookup games that match on title"
   [title options]
-  (query ["SELECT * FROM bgg WHERE name LIKE ?" (str "%" title "%")] options))
+  (query (str "SELECT * FROM bgg WHERE name LIKE " (sql-string (str "%" title "%"))) options))
 
 (defn view-game
   "View a game with a given ID"
   [id options]
-  (query ["SELECT * FROM game_list2 WHERE id = ?" id] (assoc options :format "json")))
+  (query (str "SELECT * FROM game_list2 WHERE id = " id) (assoc options :format "json")))
 
 (defn history
   "Show game history for a specific game"
   [id options]
-  (query ["SELECT * FROM played WHERE id = ? ORDER BY date DESC" id] options))
+  (query (str "SELECT * FROM played WHERE id = " id " ORDER BY date DESC") options))
 
 (defn last-played
   "Show when the games were last played"
   [n options]
-  (query ["SELECT * FROM last_played LIMIT ?" n] options))
+  (query (str "SELECT * FROM last_played LIMIT " n) options))
 
 (defn recent
   "Show recent games played"
   [n options]
-  (query ["SELECT * FROM played LIMIT ?" n] options))
+  (query (str "SELECT * FROM played LIMIT " n) options))
 
 (defn stats
   "Show win statistics and totals"
@@ -89,67 +111,64 @@
 
 (defn insert-csv
   "Insert CSV data into the database"
-  [id csv options]
+  [id csv]
   (try
-    (let [db (get-db options)
-          [header row] (csv/read-csv csv)
-          q1 (into [(str "INSERT INTO bgg (" (str/join ", " header) ") VALUES (" (str/join ", " (repeat (count header) "?")) ")")] row)
-          q2 ["INSERT INTO notes ( id, status, platform ) VALUES (?, ?, ?) " id "Inbox" "BGA"]]
-      (sql/execute! db q1)
-      (sql/execute! db q2)
+    (let [[header row] (csv/read-csv csv)
+          values (map sql-string row)
+          q1 (str "INSERT INTO bgg (" (str/join ", " header) ") VALUES (" (str/join ", " values) ")")
+          q2 (str "INSERT INTO notes (id, status, platform) VALUES (" id ", 'Inbox', 'BGA')")]
+      (d1-execute! q1)
+      (d1-execute! q2)
       (println "OK"))
     (catch Exception e
       (println "Error in insert-csv:" (.getMessage e)))))
 
 (defn update-csv
   "Update the bgg table with new CSV data"
-  [id csv options]
+  [id csv]
   (try
-    (let [db (get-db options)
-          [header rows] (csv/read-csv csv)
-          q1 (into [(str "UPDATE bgg SET " (str/join ", " (map #(str % " = ?") header)) " WHERE id = ?")] (conj (vec rows) id))]
-      (sql/execute! db q1)
+    (let [[header rows] (csv/read-csv csv)
+          set-clauses (map #(str %1 " = " (sql-string %2)) header rows)
+          q1 (str "UPDATE bgg SET " (str/join ", " set-clauses) " WHERE id = " id)]
+      (d1-execute! q1)
       (println "OK"))
     (catch Exception e
       (println "Error in update-csv:" (.getMessage e)))))
 
 (defn add-game
   "Get game data from BGG"
-  [id options]
+  [id]
   (try
     (let [{:keys [exit out err]} (shell/sh "src/sync/bgg.rkt" id)]
       (if (zero? exit)
-        (insert-csv id out options)
+        (insert-csv id out)
         (println "Error:" exit ":" err)))
     (catch Exception e
       (println "Error in add-game:" (.getMessage e)))))
 
 (defn update-game-data
   "Update game data with latest data from BGG. Check first that the games exists in the db"
-  [id options]
+  [id]
   (try
-    (let [db (get-db options)
-          qcheck "SELECT 1 from bgg WHERE id = ? LIMIT 1"]
-      (if (seq (sql/query db [qcheck id]))
-        (let [{:keys [exit out err]} (shell/sh "src/sync/bgg.rkt" id)]
-          (if (zero? exit)
-            (update-csv id out options)
-            (println "Error:" exit ":" err)))
-        ;; else
-        (println "Game not found in database")))
+    (if (seq (d1-query (str "SELECT 1 FROM bgg WHERE id = " id " LIMIT 1")))
+      (let [{:keys [exit out err]} (shell/sh "src/sync/bgg.rkt" id)]
+        (if (zero? exit)
+          (update-csv id out)
+          (println "Error:" exit ":" err)))
+      ;; else
+      (println "Game not found in database"))
     (catch Exception e
       (println "Error in update-game-data:" (.getMessage e)))))
 
 (defn update-notes
   "Update game notes"
-  [id field value options]
+  [id field value]
   (try
-    (let [db (get-db options)
-          qcheck [(str "SELECT " field " from notes WHERE id = ? LIMIT 1") id]
-          q [(str "UPDATE notes SET " field " = ? WHERE id = ?") value id]]
-      (if (seq (sql/query db qcheck))
+    (let [qcheck (str "SELECT " field " FROM notes WHERE id = " id " LIMIT 1")
+          q (str "UPDATE notes SET " field " = " (sql-string value) " WHERE id = " id)]
+      (if (seq (d1-query qcheck))
         (do
-          (sql/execute! db q)
+          (d1-execute! q)
           (println "OK"))
         (println "Game not found")))
     (catch Exception e
@@ -157,15 +176,15 @@
 
 (defn add-result
   "Add a game result"
-  [id winner score options]
+  [id winner score]
   (try
-    (let [db (get-db options)
-          date (current-date)
-          qcheck "SELECT 1 from bgg WHERE id = ? LIMIT 1"
-          q "INSERT INTO log (date, id, winner, scores) VALUES (?, ?, ?, ?)"]
-      (if (seq (sql/query db [qcheck id]))
+    (let [date (current-date)
+          qcheck (str "SELECT 1 FROM bgg WHERE id = " id " LIMIT 1")
+          q (str "INSERT INTO log (date, id, winner, scores) VALUES ("
+                 (sql-string date) ", " id ", " (sql-string winner) ", " (sql-string score) ")")]
+      (if (seq (d1-query qcheck))
         (do
-          (sql/execute! db [q date id winner score])
+          (d1-execute! q)
           (println "OK"))
         (println "Game not found")))
     (catch Exception e
@@ -174,38 +193,22 @@
 (defn adhoc-query
   "Query the db with SQL. No input checking is done."
   [query-str options]
-  (let [db (get-db options)]
-    (as-> query-str <>
-      (sql/query db <>)
-      (print-output <>
-                   :format (:format options)
-                   :sort-by (:sort-by options)))))
+  (print-output (d1-query query-str)
+                :format (:format options)
+                :sort-by (:sort-by options)))
 
-(defn export-data [filename options]
-  (let [db (get-db options)
-        bgg-data (sql/query db "SELECT * FROM bgg")
-        notes-data (sql/query db "SELECT * FROM notes")
-        log-data (sql/query db "SELECT * FROM log")
+(defn export-data [filename]
+  (let [bgg-data (d1-query "SELECT * FROM bgg")
+        notes-data (d1-query "SELECT * FROM notes")
+        log-data (d1-query "SELECT * FROM log")
         all-data {:bgg bgg-data
                   :notes notes-data
                   :log log-data}]
     (spit filename (json/generate-string all-data {:pretty true}))
     (println "Data exported to" filename)))
 
-(defn backup
-  "Create a backup of the database file to the nominated folder"
-  [options]
-  (let [db-file (:db-file options)
-        backup-dir (:backup-dir options)
-        timestamp (current-date)
-        db-backup (fs/file-name (str/replace db-file #"\.db$" (str "_" timestamp ".db")))
-        backup-file (fs/path backup-dir db-backup)]
-    (fs/create-dirs backup-dir)
-    (fs/copy db-file backup-file {:replace-existing true})
-    (println "Backup created:" (str backup-file))))
-
 (defn usage [options-summary]
-  (str "Eurogames CLI
+  (str "Eurogames CLI (D1)
 
 Usage: bb -m cli.games [options] command [args...]
 
@@ -235,8 +238,7 @@ Commands:
 
   Utilities:
     query <sql>                          Run custom SQL query
-    export <filename>                    Export data to file
-    backup                               Create a backup of the database"))
+    export <filename>                    Export data to file"))
 
 (defn help
   "Print help message"
@@ -269,13 +271,12 @@ Commands:
               "last" (last-played (or (first cmd-args) 100) options)
               "recent" (recent (or (first cmd-args) 15) options)
               "stats" (stats options)
-              "sync" (update-game-data (first cmd-args) options)
-              "notes" (update-notes (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
-              "add" (add-game (first cmd-args) options)
-              "play" (add-result (first cmd-args) (second cmd-args) (nth cmd-args 2) options)
+              "sync" (update-game-data (first cmd-args))
+              "notes" (update-notes (first cmd-args) (second cmd-args) (nth cmd-args 2))
+              "add" (add-game (first cmd-args))
+              "play" (add-result (first cmd-args) (second cmd-args) (nth cmd-args 2))
               "query" (adhoc-query (str/join " " cmd-args) options)
-              "export" (export-data (first cmd-args) options)
-              "backup" (backup {:db-file (:db options) :backup-dir (:backup-dir options)})
+              "export" (export-data (first cmd-args))
               ;; else
               (do
                 (println "Unknown command:" cmd)
